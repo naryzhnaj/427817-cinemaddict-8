@@ -1,27 +1,12 @@
 import renderFilterItem from './render-filter.js';
 import renderCard from './render-card.js';
+import makeFilmsList from './make-list.js';
 
 const filters = [
   {name: `all`, fullname: `All movies`},
   {name: `watchlist`, fullname: `Watchlist`},
   {name: `history`, fullname: `History`},
   {name: `favorites`, fullname: `Favorites`}];
-
-const films = [
-  {title: `The Assassination Of Jessie James By The Coward Robert Ford`,
-    rating: 9.8,
-    year: 2018,
-    duration: `1h&nbsp;13m`,
-    genre: `Comedy`,
-    poster: `three-friends`,
-    description: `A priest with a haunted past and a novice on the threshold of her final vows are sent by the Vatican to investigate the death of a young nun in Romania and confront a malevolent force in the form of a demonic nun.`},
-  {title: `Incredibles 2`,
-    rating: 9.8,
-    year: 2018,
-    duration: `1h&nbsp;13m`,
-    genre: `Comedy`,
-    poster: `accused`,
-    description: `A priests Romania and confront a malevolent force in the form of a demonic nun`}];
 
 const cardsRandomAmount = 7;
 const cardsExtraAmount = 2;
@@ -61,9 +46,11 @@ const deleteCards = (container) => {
  * @param {Boolean} inMainBlock выводятся ли карточки в главный блок
  */
 const renderCards = (container, num, inMainBlock = true) => {
-  for (let i = 0; i < num; i++) {
-    container.insertAdjacentHTML(`beforeend`, renderCard(films[1], inMainBlock));
-  }
+  const films = makeFilmsList(num);
+
+  films.forEach((film) => {
+    container.insertAdjacentHTML(`beforeend`, renderCard(film, inMainBlock));
+  });
 };
 
 const filterBlock = filters.map((filter) =>
