@@ -43,9 +43,13 @@ export default class Film {
     this._onCommentsClick = fn;
   }
 
-  render(container) {
+  bind() {
+    this._element.querySelector(`.film-card__comments`).addEventListener(`click`, this._onCommentsClick.bind(this));
+  }
+
+  render() {
     this._element = this.template;
-    container.appendChild(this._element);
-    // this.bind();
+    this.bind();
+    return this._element;
   }
 }

@@ -66,7 +66,7 @@ export default class Popup {
             <td class="film-details__term">Genres</td>
             <td class="film-details__cell">
   ${this._genre.map((genre) =>
-    `<span class="film-details__genre">${genre}</span>`).join(`, `)}
+    `<span class="film-details__genre">${genre}</span>`).join(` `)}
             </td>
           </tr>
         </table>
@@ -148,8 +148,12 @@ export default class Popup {
     return popup;
   }
 
-  set onCloseClick(fn) {
-    this._onCloseClick = fn;
+  _onCloseClick() {
+    this._element.remove();
+  }
+
+  bind() {
+    this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
   }
 
   render() {

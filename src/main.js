@@ -31,6 +31,16 @@ const deleteCards = (container) => {
 };
 
 /**
+ * @description отрисовать попап с подробностями фильма
+ *
+ * @param {Object} filmData данные соответствующего фильма
+ */
+const renderPopup = (filmData) => {
+  const popup = new Popup(filmData).render();
+  document.querySelector(`body`).appendChild(popup);
+};
+
+/**
  * @description отрисовать карточки на странице
  *
  * @param {DOM-элемент} container родительский блок
@@ -43,7 +53,10 @@ const renderCards = (container, num) => {
 
   films.forEach((film) => {
     const filmCard = new Film(film, inMainBlock);
-    filmCard.render(container);
+
+    filmCard.onCommentsClick = () => renderPopup(filmCard._data);
+
+    container.appendChild(filmCard.render());
   });
 };
 
