@@ -1,6 +1,7 @@
 import renderFilterItem from './render-filter.js';
-import renderCard from './render-card.js';
-import makeFilmsList from './make-list.js';
+import Film from './film.js';
+import Popup from './popup.js';
+import makeFilmsList, {getRandomNumber} from './make-list.js';
 
 const filters = [
   {name: `all`, fullname: `All movies`},
@@ -15,15 +16,6 @@ const filterContainer = document.querySelector(`.main-navigation`);
 const filmsContainer = document.querySelector(`.films-list .films-list__container`);
 const topRatedContainer = document.querySelector(`.films-list--extra .films-list__container`);
 const mostCommentedContainer = document.querySelector(`.films-list--extra:last-child .films-list__container`);
-
-/**
- * @description получить случайное число в диапазоне
- *
- * @param {Number} num максимум
- *
- * @return {Number} случайное число от 0 до num
- */
-const getRandomNumber = (num) => Math.floor(Math.random() * num);
 
 /**
  * @description удалить текущие карточки
@@ -43,13 +35,15 @@ const deleteCards = (container) => {
  *
  * @param {DOM-элемент} container родительский блок
  * @param {Number} num кол-во карточек
- * @param {Boolean} inMainBlock выводятся ли карточки в главный блок
  */
-const renderCards = (container, num, inMainBlock = true) => {
+const renderCards = (container, num) => {
   const films = makeFilmsList(num);
 
+  const inMainBlock = (container === filmsContainer);
+
   films.forEach((film) => {
-    container.insertAdjacentHTML(`beforeend`, renderCard(film, inMainBlock));
+    const filmCard = new Film(film, inMainBlock);
+    filmCard.render(container);
   });
 };
 
@@ -66,5 +60,5 @@ filterContainer.addEventListener(`click`, function (evt) {
 });
 
 renderCards(filmsContainer, cardsRandomAmount);
-renderCards(topRatedContainer, cardsExtraAmount, false);
-renderCards(mostCommentedContainer, cardsExtraAmount, false);
+renderCards(topRatedContainer, cardsExtraAmount);
+renderCards(mostCommentedContainer, cardsExtraAmount);
