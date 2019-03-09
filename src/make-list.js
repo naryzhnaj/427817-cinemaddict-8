@@ -1,8 +1,8 @@
 const filmsData = new Map([
-  [`title`, new Array(15).fill().map((val, i)=> `фильм № ${i + 1}`)],
+  [`title`, new Array(15).fill().map((val, i)=> `movie № ${i + 1}`)],
   [`year`, new Array(10).fill().map((val, i)=> 2009 + i)],
+  [`country`, [`USA`, `Italy`, `Canada`, `France`, `Germany`]],
   [`duration`, [`1h&nbsp;10m`, `1h&nbsp;30m`, `2h&nbsp;10m`, `2h&nbsp;30m`]],
-  [`genre`, [`Adventure`, `Comedy`, `Horror`, `Crime`, `Detective story`, `Fantasy`, `Drama`, `Romance`, `Thriller`, `Animation`]],
   [`poster`, [`accused`, `blackmail`, `blue-blazes`, `fuga-da-new-york`, `moonrise`, `three-friends`]]]);
 
 const randomText = `Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -13,6 +13,7 @@ Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum.
 Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.
 Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat.
 Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`.split(`. `);
+const genres = [`Adventure`, `Comedy`, `Horror`, `Crime`, `Detective story`, `Fantasy`, `Drama`, `Romance`, `Thriller`, `Animation`];
 
 /**
  * @description получить случайный элемент массива
@@ -24,21 +25,34 @@ Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`.spl
 const getRandomEl = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 /**
+ * @description получить случайное число в диапазоне
+ *
+ * @param {Number} num максимум
+ *
+ * @return {Number} случайное число от 0 до num
+ */
+export const getRandomNumber = (num) => Math.floor(Math.random() * num);
+
+/**
  * @description создать данные для случайного фильма
  *
  * @return {Object} film
 */
 const makeFilm = () => {
   let film = {description: ``,
-    rating: [Math.floor(100 * Math.random()) / 10]};
+    genre: [],
+    rating: [getRandomNumber(100) / 10]};
 
   filmsData.forEach((value, key) => {
     film[key] = getRandomEl(value);
   });
+
   // добавить в описание от 1 до 3 случайных предложений из текста
-  for (let i = 0; i < getRandomEl([1, 2, 3]); i++) {
+  for (let i = 0; i < 1 + getRandomNumber(3); i++) {
     film.description += getRandomEl(randomText);
+    film.genre.push(getRandomEl(genres));
   }
+
   return film;
 };
 

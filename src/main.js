@@ -1,6 +1,7 @@
 import renderFilterItem from './render-filter.js';
-import renderCard from './render-card.js';
-import makeFilmsList from './make-list.js';
+import Film from './film.js';
+import Popup from './popup.js';
+import makeFilmsList, {getRandomNumber} from './make-list.js';
 
 const filters = [
   {name: `all`, fullname: `All movies`},
@@ -17,15 +18,6 @@ const topRatedContainer = document.querySelector(`.films-list--extra .films-list
 const mostCommentedContainer = document.querySelector(`.films-list--extra:last-child .films-list__container`);
 
 /**
- * @description получить случайное число в диапазоне
- *
- * @param {Number} num максимум
- *
- * @return {Number} случайное число от 0 до num
- */
-const getRandomNumber = (num) => Math.floor(Math.random() * num);
-
-/**
  * @description удалить текущие карточки
  *
  * @param {DOM-элемент} container родительский блок
@@ -39,17 +31,32 @@ const deleteCards = (container) => {
 };
 
 /**
+ * @description отрисовать попап с подробностями фильма
+ *
+ * @param {Object} filmData данные соответствующего фильма
+ */
+const renderPopup = (filmData) => {
+  const popup = new Popup(filmData).render();
+  document.querySelector(`body`).appendChild(popup);
+};
+
+/**
  * @description отрисовать карточки на странице
  *
  * @param {DOM-элемент} container родительский блок
  * @param {Number} num кол-во карточек
- * @param {Boolean} inMainBlock выводятся ли карточки в главный блок
  */
-const renderCards = (container, num, inMainBlock = true) => {
+const renderCards = (container, num) => {
   const films = makeFilmsList(num);
 
+  const inMainBlock = (container === filmsContainer);
+
   films.forEach((film) => {
-    container.insertAdjacentHTML(`beforeend`, renderCard(film, inMainBlock));
+    const filmCard = new Film(film, inMainBlock);
+
+    filmCard.onCommentsClick = () => renderPopup(filmCard._data);
+
+    container.appendChild(filmCard.render());
   });
 };
 
@@ -66,5 +73,5 @@ filterContainer.addEventListener(`click`, function (evt) {
 });
 
 renderCards(filmsContainer, cardsRandomAmount);
-renderCards(topRatedContainer, cardsExtraAmount, false);
-renderCards(mostCommentedContainer, cardsExtraAmount, false);
+renderCards(topRatedContainer, cardsExtraAmount);
+renderCards(mostCommentedContainer, cardsExtraAmount);
