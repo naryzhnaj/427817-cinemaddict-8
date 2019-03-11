@@ -37,7 +37,7 @@ const deleteCards = (container) => {
  */
 const renderPopup = (filmData) => {
   const popup = new Popup(filmData).render();
-  document.querySelector(`body`).appendChild(popup);
+  document.body.appendChild(popup);
 };
 
 /**
