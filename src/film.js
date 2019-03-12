@@ -1,5 +1,8 @@
-export default class Film {
+import Component from './component.js';
+
+export default class Film extends Component {
   constructor(data, withDescription) {
+    super();
     this._title = data.title;
     this._year = data.year;
     this._duration = data.duration;
@@ -10,7 +13,6 @@ export default class Film {
 
     this._data = data;
     this._withDescription = withDescription;
-    this._element = null;
   }
 
   get template() {
@@ -45,11 +47,5 @@ export default class Film {
 
   bind() {
     this._element.querySelector(`.film-card__comments`).addEventListener(`click`, this._onCommentsClick.bind(this));
-  }
-
-  render() {
-    this._element = this.template;
-    this.bind();
-    return this._element;
   }
 }

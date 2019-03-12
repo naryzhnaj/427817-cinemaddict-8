@@ -1,5 +1,8 @@
-export default class Popup {
+import Component from './component.js';
+
+export default class Popup extends Component {
   constructor(data) {
+    super();
     this._title = data.title;
     this._year = data.year;
     this._duration = data.duration;
@@ -8,7 +11,6 @@ export default class Popup {
     this._description = data.description;
     this._rating = data.rating;
     this._country = data.country;
-    this._element = null;
   }
 
   get template() {
@@ -129,7 +131,7 @@ export default class Popup {
 
       <div class="film-details__user-score">
         <div class="film-details__user-rating-poster">
-          <img src="images/posters/blackmail.jpg" alt="film-poster" class="film-details__user-rating-img">
+          <img src="images/posters/${this._poster}.jpg" alt="film-poster" class="film-details__user-rating-img">
       </div>
 
         <section class="film-details__user-rating-inner">
@@ -154,11 +156,5 @@ export default class Popup {
 
   bind() {
     this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
-  }
-
-  render() {
-    this._element = this.template;
-    this.bind();
-    return this._element;
   }
 }
