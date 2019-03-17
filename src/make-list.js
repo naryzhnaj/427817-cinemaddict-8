@@ -51,7 +51,8 @@ const makeFilm = () => {
     rating: [getRandomNumber(100) / 10],
     userRating: null,
     isFavourite: false,
-    isWatched: false
+    isWatched: false,
+    inWatchlist: false
   };
 
   filmsData.forEach((value, key) => {
@@ -64,7 +65,11 @@ const makeFilm = () => {
   for (let i = 0; i < 1 + getRandomNumber(3); i++) {
     film.description += getRandomEl(randomText);
     film.genre.push(getRandomEl(genres));
-    film.comments.push(getRandomEl(genres));
+    film.comments.push({
+      text: getRandomEl(randomText),
+      author: `user${i}`,
+      date: `date${i}`
+    });
   }
 
   return film;

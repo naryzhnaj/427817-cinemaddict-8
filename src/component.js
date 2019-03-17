@@ -18,4 +18,6 @@ export default class Component {
     this.bind();
     return this._element;
   }
+
+  update() {}
 }
