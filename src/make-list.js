@@ -68,7 +68,7 @@ const makeFilm = () => {
     film.comments.push({
       text: getRandomEl(randomText),
       author: `user${i}`,
-      date: `date${i}`
+      date: `2019-03-01`
     });
   }
 
