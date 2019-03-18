@@ -1,16 +1,17 @@
 import Component from './component.js';
+import moment from 'moment';
 
 export default class Film extends Component {
   constructor(data, withDescription) {
     super();
     this._title = data.title;
-    this._year = data.year;
-    this._duration = data.duration;
+    this._release = moment(data.release).format(`YYYY`);
+    this._duration = `${Math.floor(data.duration / 60)}h&nbsp;${data.duration % 60}m`;
     this._genre = data.genre;
     this._poster = data.poster;
     this._description = data.description;
     this._rating = data.rating;
-
+    this._commentsNumber = data.comments.length;
     this._data = data;
     this._withDescription = withDescription;
   }
@@ -25,13 +26,13 @@ export default class Film extends Component {
     card.innerHTML = `<h3 class="film-card__title">${this._title}</h3>
       <p class="film-card__rating">${this._rating}</p>
       <p class="film-card__info">
-        <span class="film-card__year">${this._year}</span>
+        <span class="film-card__year">${this._release}</span>
         <span class="film-card__duration">${this._duration}</span>
         <span class="film-card__genre">${this._genre.join(`, `)}</span>
       </p>
       <img src="./images/posters/${this._poster}.jpg" alt="" class="film-card__poster">
       ${this._withDescription ? `<p class="film-card__description">${this._description}</p>` : ``}
-      <button class="film-card__comments">comments</button>
+      <button class="film-card__comments">${this._commentsNumber} comments</button>
 
       <form class="film-card__controls">
         <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist">Add to watchlist</button>

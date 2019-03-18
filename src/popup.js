@@ -1,16 +1,28 @@
 import Component from './component.js';
+import moment from 'moment';
 
 export default class Popup extends Component {
   constructor(data) {
     super();
+    this._data = data;
     this._title = data.title;
-    this._year = data.year;
+    this._original = data.originalName;
+    this._release = moment(data.release).format(`D MMMM YYYY`);
     this._duration = data.duration;
     this._genre = data.genre;
     this._poster = data.poster;
     this._description = data.description;
     this._rating = data.rating;
     this._country = data.country;
+    this._age = data.age;
+    this._director = data.director;
+    this._writer = data.writer;
+    this._actors = data.actors;
+    this._comments = data.comments;
+    this._userRating = data.userRating;
+    this._isFavourite = data.isFavourite;
+    this._isWatched = data.isWatched;
+    this._inWatchlist = data.inWatchlist;
   }
 
   get template() {
@@ -23,42 +35,42 @@ export default class Popup extends Component {
     <div class="film-details__info-wrap">
       <div class="film-details__poster">
         <img class="film-details__poster-img" src="images/posters/${this._poster}.jpg" alt=${this._title}>
-        <p class="film-details__age">18+</p>
+        <p class="film-details__age">${this._age}+</p>
       </div>
 
       <div class="film-details__info">
         <div class="film-details__info-head">
           <div class="film-details__title-wrap">
             <h3 class="film-details__title">${this._title}</h3>
-            <p class="film-details__title-original">Original: Невероятная семейка</p>
+            <p class="film-details__title-original">${this._original}</p>
           </div>
 
           <div class="film-details__rating">
             <p class="film-details__total-rating">${this._rating}</p>
-            <p class="film-details__user-rating">Your rate 8</p>
+      ${this._userRating ? `<p class="film-details__user-rating">Your rate ${this._userRating}</p>` : ``}
           </div>
         </div>
 
         <table class="film-details__table">
           <tr class="film-details__row">
             <td class="film-details__term">Director</td>
-            <td class="film-details__cell">Brad Bird</td>
+            <td class="film-details__cell">${this._director}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Writers</td>
-            <td class="film-details__cell">Brad Bird</td>
+            <td class="film-details__cell">${this._writer}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Actors</td>
-            <td class="film-details__cell">Samuel L. Jackson, Catherine Keener, Sophia Bush</td>
+            <td class="film-details__cell">${this._actors}</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Release Date</td>
-            <td class="film-details__cell">15 June 2018 (USA)</td>
+            <td class="film-details__cell">${this._release} (${this._country})</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Runtime</td>
-            <td class="film-details__cell">${this._duration}</td>
+            <td class="film-details__cell">${this._duration} min</td>
           </tr>
           <tr class="film-details__row">
             <td class="film-details__term">Country</td>
@@ -77,30 +89,32 @@ export default class Popup extends Component {
     </div>
 
     <section class="film-details__controls">
-      <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist" name="watchlist">
+      <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist"
+        ${this._inWatchlist ? `checked` : ``} name="watchlist">
       <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
-
-      <input type="checkbox" class="film-details__control-input visually-hidden" id="watched" name="watched">
+      <input type="checkbox" class="film-details__control-input visually-hidden" id="watched"
+        ${this._isWatched ? `checked` : ``} name="watched">
       <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
-
-      <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite" name="favorite">
+      <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite"
+        ${this._isFavourite ? `checked` : ``} name="favorite">
       <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
     </section>
 
     <section class="film-details__comments-wrap">
-      <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">1</span></h3>
+      <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
 
       <ul class="film-details__comments-list">
-        <li class="film-details__comment">
-          <span class="film-details__comment-emoji">😴</span>
-          <div>
-            <p class="film-details__comment-text">So long-long story, boring!</p>
-            <p class="film-details__comment-info">
-              <span class="film-details__comment-author">Tim Macoveev</span>
-              <span class="film-details__comment-day">3 days ago</span>
-            </p>
-          </div>
-        </li>
+        ${this._comments.map((comment) =>
+    `<li class="film-details__comment">
+            <span class="film-details__comment-emoji">😴</span>
+            <div>
+              <p class="film-details__comment-text">${comment.text}</p>
+              <p class="film-details__comment-info">
+                <span class="film-details__comment-author">${comment.author}</span>
+                <span class="film-details__comment-day">${moment(comment.date).format(`D MMM YYYY`)}</span>
+              </p>
+            </div>
+          </li>`).join(``)}
       </ul>
 
       <div class="film-details__new-comment">
@@ -111,7 +125,7 @@ export default class Popup extends Component {
           <div class="film-details__emoji-list">
             <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping">
             <label class="film-details__emoji-label" for="emoji-sleeping">😴</label>
-            <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-neutral-face" value="neutral-face" checked>
+            <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-neutral-face" value="neutral-face">
             <label class="film-details__emoji-label" for="emoji-neutral-face">😐</label>
             <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-grinning" value="grinning">
             <label class="film-details__emoji-label" for="emoji-grinning">😀</label>
@@ -154,7 +168,29 @@ export default class Popup extends Component {
     this._element.remove();
   }
 
+  update() {
+    const popupChanged = new Popup(this._data).render();
+    this._element.parentNode.replaceChild(popupChanged, this._element);
+  }
+
+  _onCommentAdd() {
+    this._data.comments.push(
+        {author: `user`,
+          text: this._element.querySelector(`.film-details__comment-input`).value,
+          emoji: `neutral-face`,
+          date: new Date()}
+    );
+    this.update();
+  }
+
+  _onScoreClick(evt) {
+    this._data.userRating = evt.target.value;
+    this.update();
+  }
+
   bind() {
     this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
+    this._element.querySelector(`.film-details__user-rating-score`).addEventListener(`change`, this._onScoreClick.bind(this));
+    this._element.querySelector(`.film-details__comment-input`).addEventListener(`change`, this._onCommentAdd.bind(this));
   }
 }
