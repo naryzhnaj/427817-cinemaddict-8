@@ -1,7 +1,8 @@
 import renderFilterItem from './render-filter.js';
 import Film from './film.js';
 import Popup from './popup.js';
-import makeFilmsList, {getRandomNumber} from './make-list.js';
+import Filter from './filter.js';
+import makeFilmsList from './make-list.js';
 
 const filters = [
   {name: `all`, fullname: `All movies`},
@@ -36,42 +37,54 @@ const deleteCards = (container) => {
  * @param {Object} filmData данные соответствующего фильма
  */
 const renderPopup = (filmData) => {
-  const popup = new Popup(filmData).render();
-  document.body.appendChild(popup);
+  const popup = new Popup(filmData);
+  document.body.appendChild(popup.render());
 };
 
 /**
  * @description отрисовать карточки на странице
  *
  * @param {DOM-элемент} container родительский блок
- * @param {Number} num кол-во карточек
+ * @param {Array} films объекты с данными
  */
-const renderCards = (container, num) => {
-  const films = makeFilmsList(num);
-
+const renderCards = (container, films) => {
   const inMainBlock = (container === filmsContainer);
 
   films.forEach((film) => {
     const filmCard = new Film(film, inMainBlock);
 
-    filmCard.onCommentsClick = () => renderPopup(filmCard._data);
+    filmCard.onCommentsClick = () => renderPopup(film);
+
+    filmCard.onAddToWatchList = (evt) => {
+      evt.preventDefault();
+      film.inWatchlist = !film.inWatchlist;
+    };
+
+    filmCard.onMarkAsWatched = (evt) => {
+      evt.preventDefault();
+      film.isWatched = !film.isWatched;
+    };
 
     container.appendChild(filmCard.render());
   });
 };
 
+const topRatedFilms = makeFilmsList(cardsExtraAmount);
+const mostCommentedFilms = makeFilmsList(cardsExtraAmount);
+const allFilms = makeFilmsList(cardsRandomAmount);
+
 const filterBlock = filters.map((filter) =>
-  renderFilterItem(filter, getRandomNumber(cardsRandomAmount))).join(``);
+  renderFilterItem(filter, 0)).join(``);
 
 filterContainer.insertAdjacentHTML(`afterbegin`, filterBlock);
 
 filterContainer.addEventListener(`click`, function (evt) {
   if (evt.target.className === `main-navigation__item`) {
     deleteCards(filmsContainer);
-    renderCards(filmsContainer, getRandomNumber(cardsRandomAmount));
+    renderCards(filmsContainer, cardsRandomAmount);
   }
 });
 
-renderCards(filmsContainer, cardsRandomAmount);
-renderCards(topRatedContainer, cardsExtraAmount);
-renderCards(mostCommentedContainer, cardsExtraAmount);
+renderCards(filmsContainer, allFilms);
+renderCards(topRatedContainer, topRatedFilms);
+renderCards(mostCommentedContainer, mostCommentedFilms);

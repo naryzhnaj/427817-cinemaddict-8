@@ -4,7 +4,6 @@ import moment from 'moment';
 export default class Popup extends Component {
   constructor(data) {
     super();
-    this._data = data;
     this._title = data.title;
     this._original = data.originalName;
     this._release = moment(data.release).format(`D MMMM YYYY`);
@@ -20,9 +19,10 @@ export default class Popup extends Component {
     this._actors = data.actors;
     this._comments = data.comments;
     this._userRating = data.userRating;
-    this._isFavourite = data.isFavourite;
-    this._isWatched = data.isWatched;
-    this._inWatchlist = data.inWatchlist;
+
+    this.isFavourite = data.isFavourite;
+    this.isWatched = data.isWatched;
+    this.inWatchlist = data.inWatchlist;
   }
 
   get template() {
@@ -90,13 +90,13 @@ export default class Popup extends Component {
 
     <section class="film-details__controls">
       <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist"
-        ${this._inWatchlist ? `checked` : ``} name="watchlist">
+        ${this.inWatchlist ? `checked` : ``} name="watchlist">
       <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
       <input type="checkbox" class="film-details__control-input visually-hidden" id="watched"
-        ${this._isWatched ? `checked` : ``} name="watched">
+        ${this.isWatched ? `checked` : ``} name="watched">
       <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
       <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite"
-        ${this._isFavourite ? `checked` : ``} name="favorite">
+        ${this.isFavourite ? `checked` : ``} name="favorite">
       <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
     </section>
 
@@ -168,29 +168,26 @@ export default class Popup extends Component {
     this._element.remove();
   }
 
-  update() {
-    const popupChanged = new Popup(this._data).render();
-    this._element.parentNode.replaceChild(popupChanged, this._element);
-  }
-
-  _onCommentAdd() {
-    this._data.comments.push(
-        {author: `user`,
-          text: this._element.querySelector(`.film-details__comment-input`).value,
-          emoji: `neutral-face`,
-          date: new Date()}
-    );
-    this.update();
-  }
-
   _onScoreClick(evt) {
-    this._data.userRating = evt.target.value;
+    this._userRating = evt.target.value;
     this.update();
+  }
+
+  _onStatusClick(evt) {
+    const field = {
+      favourite: `isFavourite`,
+      watched: `isWatched`,
+      watchlist: `inWatchlist`}[evt.target.name];
+
+    if (field) {
+      this[field] = !this[field];
+    }
   }
 
   bind() {
     this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
     this._element.querySelector(`.film-details__user-rating-score`).addEventListener(`change`, this._onScoreClick.bind(this));
-    this._element.querySelector(`.film-details__comment-input`).addEventListener(`change`, this._onCommentAdd.bind(this));
+    this._element.querySelector(`.film-details__controls`).addEventListener(`change`, this._onStatusClick.bind(this));
+    // this._element.addEventListener(`keydown`, this._onCommentAdd.bind(this));
   }
 }
