@@ -1,4 +1,3 @@
-import renderFilterItem from './render-filter.js';
 import Film from './film.js';
 import Popup from './popup.js';
 import Filter from './filter.js';
@@ -6,17 +5,20 @@ import makeFilmsList from './make-list.js';
 
 const filters = [
   {name: `all`, fullname: `All movies`},
-  {name: `watchlist`, fullname: `Watchlist`},
-  {name: `history`, fullname: `History`},
-  {name: `favorites`, fullname: `Favorites`}];
+  {name: `watchlist`, fullname: `Watchlist`, count: 0},
+  {name: `history`, fullname: `History`, count: 0},
+  {name: `favorites`, fullname: `Favorites`, count: 0},
+  {name: `stats`, fullname: `Stats`}
+];
 
-const cardsRandomAmount = 7;
+const cardsAmount = 7;
 const cardsExtraAmount = 2;
 
-const filterContainer = document.querySelector(`.main-navigation`);
+const mainContainer = document.querySelector(`.films`);
 const filmsContainer = document.querySelector(`.films-list .films-list__container`);
 const topRatedContainer = document.querySelector(`.films-list--extra .films-list__container`);
 const mostCommentedContainer = document.querySelector(`.films-list--extra:last-child .films-list__container`);
+const stat = document.querySelector(`.statistic`);
 
 /**
  * @description удалить текущие карточки
@@ -69,21 +71,49 @@ const renderCards = (container, films) => {
   });
 };
 
+/**
+ * @description отфильтровать карточки на странице
+ *
+ * @param {Array} films все фильмы
+ * @param {String} filterName имя выбранного фильтра
+ *
+ * @return {Array} отфильтрованный массив
+ */
+const filterCards = (films, filterName) => {
+  let cards;
+  switch (filterName) {
+    case `all`:
+      cards = films;
+      break;
+    case `watchlist`:
+      cards = films.filter((card) => card.inWatchlist);
+      break;
+    case `history`:
+      cards = films.filter((card) => card.isWatched);
+  }
+  return cards;
+};
+
 const topRatedFilms = makeFilmsList(cardsExtraAmount);
 const mostCommentedFilms = makeFilmsList(cardsExtraAmount);
-const allFilms = makeFilmsList(cardsRandomAmount);
+const allFilms = makeFilmsList(cardsAmount);
+const filterBlock = new Filter(filters);
 
-const filterBlock = filters.map((filter) =>
-  renderFilterItem(filter, 0)).join(``);
+filterBlock.onStatsClick = () => {
+  mainContainer.classList.toggle(`visually-hidden`);
+  stat.classList.toggle(`visually-hidden`);
+};
 
-filterContainer.insertAdjacentHTML(`afterbegin`, filterBlock);
-
-filterContainer.addEventListener(`click`, function (evt) {
-  if (evt.target.className === `main-navigation__item`) {
+filterBlock.onFilter = (evt) => {
+  evt.preventDefault();
+  const filter = evt.target.id;
+  if (filter === `all` || filter === `history` || filter === `watchlist`) {
     deleteCards(filmsContainer);
-    renderCards(filmsContainer, cardsRandomAmount);
+    renderCards(filmsContainer, filterCards(allFilms, filter));
   }
-});
+};
+
+mainContainer.insertAdjacentElement(`beforebegin`, filterBlock.render());
 
 renderCards(filmsContainer, allFilms);
 renderCards(topRatedContainer, topRatedFilms);
