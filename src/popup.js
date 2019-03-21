@@ -47,7 +47,7 @@ export default class Popup extends Component {
 
           <div class="film-details__rating">
             <p class="film-details__total-rating">${this._rating}</p>
-      ${this._userRating ? `<p class="film-details__user-rating">Your rate ${this._userRating}</p>` : ``}
+            <p class="film-details__user-rating">Your rate ${this._userRating ? this._userRating : ``}</p>
           </div>
         </div>
 
@@ -89,9 +89,9 @@ export default class Popup extends Component {
     </div>
 
     <section class="film-details__controls">
-      <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist"
-        ${this.inWatchlist ? `checked` : ``} name="watchlist">
-      <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
+      <input type="checkbox" class="film-details__control-input visually-hidden" id="to_watchlist"
+        ${this.inWatchlist ? `checked` : ``} name="to_watchlist">
+      <label for="to_watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
       <input type="checkbox" class="film-details__control-input visually-hidden" id="watched"
         ${this.isWatched ? `checked` : ``} name="watched">
       <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
@@ -170,14 +170,14 @@ export default class Popup extends Component {
 
   _onScoreClick(evt) {
     this._userRating = evt.target.value;
-    this.update();
+    this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this._userRating}`;
   }
 
   _onStatusClick(evt) {
     const field = {
-      favourite: `isFavourite`,
+      favorite: `isFavourite`,
       watched: `isWatched`,
-      watchlist: `inWatchlist`}[evt.target.name];
+      to_watchlist: `inWatchlist`}[evt.target.id];
 
     if (field) {
       this[field] = !this[field];
