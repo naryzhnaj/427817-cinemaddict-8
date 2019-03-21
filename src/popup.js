@@ -89,9 +89,9 @@ export default class Popup extends Component {
     </div>
 
     <section class="film-details__controls">
-      <input type="checkbox" class="film-details__control-input visually-hidden" id="to_watchlist"
-        ${this.inWatchlist ? `checked` : ``} name="to_watchlist">
-      <label for="to_watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
+      <input type="checkbox" class="film-details__control-input visually-hidden" id="toWatchlist"
+        ${this.inWatchlist ? `checked` : ``} name="toWatchlist">
+      <label for="toWatchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
       <input type="checkbox" class="film-details__control-input visually-hidden" id="watched"
         ${this.isWatched ? `checked` : ``} name="watched">
       <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
@@ -177,7 +177,7 @@ export default class Popup extends Component {
     const field = {
       favorite: `isFavourite`,
       watched: `isWatched`,
-      to_watchlist: `inWatchlist`}[evt.target.id];
+      toWatchlist: `inWatchlist`}[evt.target.id];
 
     if (field) {
       this[field] = !this[field];
