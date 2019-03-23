@@ -1,6 +1,8 @@
 import Component from './component.js';
 import moment from 'moment';
 
+const ENTER_KEYCODE = 13;
+
 export default class Popup extends Component {
   constructor(data) {
     super();
@@ -111,7 +113,7 @@ export default class Popup extends Component {
               <p class="film-details__comment-text">${comment.text}</p>
               <p class="film-details__comment-info">
                 <span class="film-details__comment-author">${comment.author}</span>
-                <span class="film-details__comment-day">${moment(comment.date).format(`D MMM YYYY`)}</span>
+                <span class="film-details__comment-day">${moment(comment.date, `YYYY-MM-DD`).fromNow()}</span>
               </p>
             </div>
           </li>`).join(``)}
@@ -139,7 +141,7 @@ export default class Popup extends Component {
 
     <section class="film-details__user-rating-wrap">
       <div class="film-details__user-rating-controls">
-        <span class="film-details__watched-status film-details__watched-status--active">Already watched</span>
+        <span class="film-details__watched-status${this.isWatched ? ` film-details__watched-status--active` : ``}">Already watched</span>
         <button class="film-details__watched-reset" type="button">undo</button>
       </div>
 
@@ -168,9 +170,27 @@ export default class Popup extends Component {
     this._element.remove();
   }
 
+  _onCommentAdd(evt) {
+    if (evt.keyCode === ENTER_KEYCODE && evt.ctrlKey) {
+      this._comments.push(
+          {author: `user`,
+            text: this._element.querySelector(`.film-details__comment-input`).value,
+            emoji: `neutral-face`,
+            date: new Date()}
+      );
+
+      this._element.remove();
+      document.body.appendChild(this.render());
+    }
+  }
+
   _onScoreClick(evt) {
     this._userRating = evt.target.value;
     this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this._userRating}`;
+  }
+
+  _onUndoClick() {
+    this._element.querySelector(`.film-details__watched-status`).classList.remove(`film-details__watched-status--active`);
   }
 
   _onStatusClick(evt) {
@@ -188,6 +208,7 @@ export default class Popup extends Component {
     this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
     this._element.querySelector(`.film-details__user-rating-score`).addEventListener(`change`, this._onScoreClick.bind(this));
     this._element.querySelector(`.film-details__controls`).addEventListener(`change`, this._onStatusClick.bind(this));
-    // this._element.addEventListener(`keydown`, this._onCommentAdd.bind(this));
+    this._element.addEventListener(`keydown`, this._onCommentAdd.bind(this));
+    this._element.querySelector(`.film-details__watched-reset`).addEventListener(`click`, this._onUndoClick.bind(this));
   }
 }

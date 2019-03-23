@@ -2,6 +2,7 @@ import Film from './film.js';
 import Popup from './popup.js';
 import Filter from './filter.js';
 import makeFilmsList from './make-list.js';
+import renderStatistics from './statistics.js';
 
 const filters = [
   {name: `all`, fullname: `All movies`},
@@ -102,6 +103,9 @@ const filterBlock = new Filter(filters);
 filterBlock.onStatsClick = () => {
   mainContainer.classList.toggle(`visually-hidden`);
   stat.classList.toggle(`visually-hidden`);
+  if (stat.className === `statistic`) {
+    renderStatistics(filterCards(allFilms, `history`), `fanatic`);
+  }
 };
 
 filterBlock.onFilter = (evt) => {
