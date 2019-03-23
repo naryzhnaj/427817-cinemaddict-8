@@ -108,15 +108,15 @@ export default class Popup extends Component {
       <ul class="film-details__comments-list">
         ${this._comments.map((comment) =>
     `<li class="film-details__comment">
-            <span class="film-details__comment-emoji">😴</span>
-            <div>
-              <p class="film-details__comment-text">${comment.text}</p>
-              <p class="film-details__comment-info">
-                <span class="film-details__comment-author">${comment.author}</span>
-                <span class="film-details__comment-day">${moment(comment.date, `YYYY-MM-DD`).fromNow()}</span>
-              </p>
-            </div>
-          </li>`).join(``)}
+          <span class="film-details__comment-emoji">${(comment.emoji) ? {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[comment.emoji] : ``}</span>
+          <div>
+            <p class="film-details__comment-text">${comment.text}</p>
+            <p class="film-details__comment-info">
+              <span class="film-details__comment-author">${comment.author}</span>
+              <span class="film-details__comment-day">${moment(comment.date, `YYYY-MM-DD`).fromNow()}</span>
+            </p>
+          </div>
+        </li>`).join(``)}
       </ul>
 
       <div class="film-details__new-comment">
@@ -172,10 +172,11 @@ export default class Popup extends Component {
 
   _onCommentAdd(evt) {
     if (evt.keyCode === ENTER_KEYCODE && evt.ctrlKey) {
+      const formData = new FormData(this._element.querySelector(`.film-details__inner`));
       this._comments.push(
           {author: `user`,
-            text: this._element.querySelector(`.film-details__comment-input`).value,
-            emoji: `neutral-face`,
+            text: formData.get(`comment`),
+            emoji: formData.get(`comment-emoji`),
             date: new Date()}
       );
 

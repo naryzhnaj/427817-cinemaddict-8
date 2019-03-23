@@ -20,10 +20,10 @@ const countDuration = (data) => {
  */
 const drawDiagram = (genres) => {
   const statisticCtx = document.querySelector(`.statistic__chart`);
-  const BAR_HEIGHT = 10 * Object.keys(genres).length;
-  statisticCtx.height = BAR_HEIGHT * 5;
+  const BAR_HEIGHT = 50;
+  statisticCtx.height = BAR_HEIGHT * Object.keys(genres).length;
 
-  const myChart = new Chart(statisticCtx, {
+  new Chart(statisticCtx, {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
@@ -153,7 +153,19 @@ const drawStat = (count, time, userStatus, topGenre) =>
   </div>`;
 
 /**
- * @description модуль для работы со статистикой
+ * @description поиск самого просматриваемого жанра
+ *
+ * @param {Array} data массив с фильмами
+ *
+ * @return {String} топовые жанры
+ */
+const findTop = (data) => {
+  const max = Math.max(...Object.values(data));
+  return Object.keys(data).filter((el) => data[el] === max).join(`, `);
+};
+
+/**
+ * @description главная ф-ия для работы со статистикой
  *
  * @param {Array} films массив с фильмами
  * @param {String} userStatus статус пользователя
@@ -161,7 +173,6 @@ const drawStat = (count, time, userStatus, topGenre) =>
 export default (films, userStatus) => {
   const genres = listGenres(films);
   const time = countDuration(films);
-  const top = `Comedy`;
-  document.querySelector(`.statistic`).innerHTML = drawStat(films.length, time, userStatus, top);
+  document.querySelector(`.statistic`).innerHTML = drawStat(films.length, time, userStatus, findTop(genres));
   drawDiagram(genres);
 };
