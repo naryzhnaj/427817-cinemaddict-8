@@ -23,7 +23,7 @@ const drawDiagram = (genres) => {
   const BAR_HEIGHT = 50;
   statisticCtx.height = BAR_HEIGHT * Object.keys(genres).length;
 
-  new Chart(statisticCtx, {
+  new Chart(statisticCtx, { // eslint-disable-line no-new
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
@@ -92,11 +92,7 @@ const listGenres = (data) => {
   let list = {};
 
   data.forEach((film) => film.genre.forEach((el) => {
-    if (list[el]) {
-      list[el]++;
-    } else {
-      list[el] = 1;
-    }
+    list[el] = (list[el]) ? list[el] + 1 : 1;
   }));
 
   return list;

@@ -49,8 +49,8 @@ export default class Film extends Component {
     return card;
   }
 
-  set onCommentsClick(fn) {
-    this._onCommentsClick = fn;
+  set onClick(fn) {
+    this._onClick = fn;
   }
 
   set onAddToWatchList(fn) {
@@ -61,15 +61,15 @@ export default class Film extends Component {
     this._onMarkAsWatched = fn;
   }
 
-  _onMarkFavorite(evt) {
+  _onMarkAsFavorite(evt) {
     evt.preventDefault();
     this.isFavourite = !this.isFavourite;
   }
 
   bind() {
-    this._element.querySelector(`.film-card__comments`).addEventListener(`click`, this._onCommentsClick.bind(this));
+    this._element.querySelector(`.film-card__comments`).addEventListener(`click`, this._onClick.bind(this));
     this._element.querySelector(`.film-card__controls-item--add-to-watchlist`).addEventListener(`click`, this._onAddToWatchList.bind(this));
     this._element.querySelector(`.film-card__controls-item--mark-as-watched`).addEventListener(`click`, this._onMarkAsWatched.bind(this));
-    this._element.querySelector(`.film-card__controls-item--favorite`).addEventListener(`click`, this._onMarkFavorite.bind(this));
+    this._element.querySelector(`.film-card__controls-item--favorite`).addEventListener(`click`, this._onMarkAsFavorite.bind(this));
   }
 }

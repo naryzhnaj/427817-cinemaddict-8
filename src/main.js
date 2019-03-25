@@ -56,7 +56,7 @@ const renderCards = (container, films) => {
   films.forEach((film) => {
     const filmCard = new Film(film, inMainBlock);
 
-    filmCard.onCommentsClick = () => renderPopup(film);
+    filmCard.onClick = () => renderPopup(film);
 
     filmCard.onAddToWatchList = (evt) => {
       evt.preventDefault();
@@ -100,7 +100,7 @@ const mostCommentedFilms = makeFilmsList(cardsExtraAmount);
 const allFilms = makeFilmsList(cardsAmount);
 const filterBlock = new Filter(filters);
 
-filterBlock.onStatsClick = () => {
+filterBlock.onStatOpen = () => {
   mainContainer.classList.toggle(`visually-hidden`);
   stat.classList.toggle(`visually-hidden`);
   if (stat.className === `statistic`) {
@@ -108,7 +108,7 @@ filterBlock.onStatsClick = () => {
   }
 };
 
-filterBlock.onFilter = (evt) => {
+filterBlock.onFilterChange = (evt) => {
   evt.preventDefault();
   const filter = evt.target.id;
   if (filter === `all` || filter === `history` || filter === `watchlist`) {

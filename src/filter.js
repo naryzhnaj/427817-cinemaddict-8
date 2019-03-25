@@ -16,16 +16,16 @@ export default class Filter extends Component {
     return nav;
   }
 
-  set onFilter(fn) {
-    this._onFilter = fn;
+  set onFilterChange(fn) {
+    this._onFilterChange = fn;
   }
 
-  set onStatsClick(fn) {
-    this._onStatsClick = fn;
+  set onStatOpen(fn) {
+    this._onStatOpen = fn;
   }
 
   bind() {
-    this._element.addEventListener(`click`, this._onFilter.bind(this));
-    this._element.querySelector(`.main-navigation__item--additional`).addEventListener(`click`, this._onStatsClick.bind(this));
+    this._element.addEventListener(`click`, this._onFilterChange.bind(this));
+    this._element.querySelector(`.main-navigation__item--additional`).addEventListener(`click`, this._onStatOpen.bind(this));
   }
 }
