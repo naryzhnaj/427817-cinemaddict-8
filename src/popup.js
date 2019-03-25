@@ -1,10 +1,11 @@
 import Component from './component.js';
 import moment from 'moment';
 
+const ENTER_KEYCODE = 13;
+
 export default class Popup extends Component {
   constructor(data) {
     super();
-    this._data = data;
     this._title = data.title;
     this._original = data.originalName;
     this._release = moment(data.release).format(`D MMMM YYYY`);
@@ -20,9 +21,10 @@ export default class Popup extends Component {
     this._actors = data.actors;
     this._comments = data.comments;
     this._userRating = data.userRating;
-    this._isFavourite = data.isFavourite;
-    this._isWatched = data.isWatched;
-    this._inWatchlist = data.inWatchlist;
+
+    this.isFavourite = data.isFavourite;
+    this.isWatched = data.isWatched;
+    this.inWatchlist = data.inWatchlist;
   }
 
   get template() {
@@ -47,7 +49,7 @@ export default class Popup extends Component {
 
           <div class="film-details__rating">
             <p class="film-details__total-rating">${this._rating}</p>
-      ${this._userRating ? `<p class="film-details__user-rating">Your rate ${this._userRating}</p>` : ``}
+            <p class="film-details__user-rating">Your rate ${this._userRating ? this._userRating : ``}</p>
           </div>
         </div>
 
@@ -89,14 +91,14 @@ export default class Popup extends Component {
     </div>
 
     <section class="film-details__controls">
-      <input type="checkbox" class="film-details__control-input visually-hidden" id="watchlist"
-        ${this._inWatchlist ? `checked` : ``} name="watchlist">
-      <label for="watchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
+      <input type="checkbox" class="film-details__control-input visually-hidden" id="toWatchlist"
+        ${this.inWatchlist ? `checked` : ``} name="toWatchlist">
+      <label for="toWatchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
       <input type="checkbox" class="film-details__control-input visually-hidden" id="watched"
-        ${this._isWatched ? `checked` : ``} name="watched">
+        ${this.isWatched ? `checked` : ``} name="watched">
       <label for="watched" class="film-details__control-label film-details__control-label--watched">Already watched</label>
       <input type="checkbox" class="film-details__control-input visually-hidden" id="favorite"
-        ${this._isFavourite ? `checked` : ``} name="favorite">
+        ${this.isFavourite ? `checked` : ``} name="favorite">
       <label for="favorite" class="film-details__control-label film-details__control-label--favorite">Add to favorites</label>
     </section>
 
@@ -106,15 +108,15 @@ export default class Popup extends Component {
       <ul class="film-details__comments-list">
         ${this._comments.map((comment) =>
     `<li class="film-details__comment">
-            <span class="film-details__comment-emoji">😴</span>
-            <div>
-              <p class="film-details__comment-text">${comment.text}</p>
-              <p class="film-details__comment-info">
-                <span class="film-details__comment-author">${comment.author}</span>
-                <span class="film-details__comment-day">${moment(comment.date).format(`D MMM YYYY`)}</span>
-              </p>
-            </div>
-          </li>`).join(``)}
+          <span class="film-details__comment-emoji">${(comment.emoji) ? {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[comment.emoji] : ``}</span>
+          <div>
+            <p class="film-details__comment-text">${comment.text}</p>
+            <p class="film-details__comment-info">
+              <span class="film-details__comment-author">${comment.author}</span>
+              <span class="film-details__comment-day">${moment(comment.date, `YYYY-MM-DD`).fromNow()}</span>
+            </p>
+          </div>
+        </li>`).join(``)}
       </ul>
 
       <div class="film-details__new-comment">
@@ -139,7 +141,7 @@ export default class Popup extends Component {
 
     <section class="film-details__user-rating-wrap">
       <div class="film-details__user-rating-controls">
-        <span class="film-details__watched-status film-details__watched-status--active">Already watched</span>
+        <span class="film-details__watched-status${this.isWatched ? ` film-details__watched-status--active` : ``}">Already watched</span>
         <button class="film-details__watched-reset" type="button">undo</button>
       </div>
 
@@ -168,29 +170,46 @@ export default class Popup extends Component {
     this._element.remove();
   }
 
-  update() {
-    const popupChanged = new Popup(this._data).render();
-    this._element.parentNode.replaceChild(popupChanged, this._element);
-  }
+  _onCommentAdd(evt) {
+    if (evt.keyCode === ENTER_KEYCODE && evt.ctrlKey) {
+      const formData = new FormData(this._element.querySelector(`.film-details__inner`));
+      this._comments.push(
+          {author: `user`,
+            text: formData.get(`comment`),
+            emoji: formData.get(`comment-emoji`),
+            date: new Date()}
+      );
 
-  _onCommentAdd() {
-    this._data.comments.push(
-        {author: `user`,
-          text: this._element.querySelector(`.film-details__comment-input`).value,
-          emoji: `neutral-face`,
-          date: new Date()}
-    );
-    this.update();
+      this._element.remove();
+      document.body.appendChild(this.render());
+    }
   }
 
   _onScoreClick(evt) {
-    this._data.userRating = evt.target.value;
-    this.update();
+    this._userRating = evt.target.value;
+    this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this._userRating}`;
+  }
+
+  _onUndoClick() {
+    this._element.querySelector(`.film-details__watched-status`).classList.remove(`film-details__watched-status--active`);
+  }
+
+  _onStatusClick(evt) {
+    const field = {
+      favorite: `isFavourite`,
+      watched: `isWatched`,
+      toWatchlist: `inWatchlist`}[evt.target.id];
+
+    if (field) {
+      this[field] = !this[field];
+    }
   }
 
   bind() {
     this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
     this._element.querySelector(`.film-details__user-rating-score`).addEventListener(`change`, this._onScoreClick.bind(this));
-    this._element.querySelector(`.film-details__comment-input`).addEventListener(`change`, this._onCommentAdd.bind(this));
+    this._element.querySelector(`.film-details__controls`).addEventListener(`change`, this._onStatusClick.bind(this));
+    this._element.addEventListener(`keydown`, this._onCommentAdd.bind(this));
+    this._element.querySelector(`.film-details__watched-reset`).addEventListener(`click`, this._onUndoClick.bind(this));
   }
 }

@@ -32,7 +32,7 @@ const getRandomEl = (arr) => arr[Math.floor(Math.random() * arr.length)];
  *
  * @return {Number} случайное число от 0 до num
  */
-export const getRandomNumber = (num) => Math.floor(Math.random() * num);
+const getRandomNumber = (num) => Math.floor(Math.random() * num);
 
 /**
  * @description создать данные для случайного фильма
@@ -68,6 +68,7 @@ const makeFilm = () => {
     film.comments.push({
       text: getRandomEl(randomText),
       author: `user${i}`,
+      emoji: `grinning`,
       date: `2019-03-01`
     });
   }
