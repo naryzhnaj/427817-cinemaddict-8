@@ -4,19 +4,19 @@ import moment from 'moment';
 export default class Film extends Component {
   constructor(data, withDescription) {
     super();
-    this._title = data.title;
-    this._release = moment(data.release).format(`YYYY`);
-    this._duration = data.duration;
-    this._genre = data.genre;
-    this._poster = data.poster;
-    this._description = data.description;
-    this._rating = data.rating;
+    this._title = data.film_info.title;
+    this._release = moment(new Date(data.film_info.release.date)).format(`YYYY`);
+    this._duration = data.film_info.runtime;
+    this._genre = data.film_info.genre;
+    this._poster = data.film_info.poster;
+    this._description = data.film_info.description;
+    this._rating = data.film_info.total_rating;
     this._commentsNumber = data.comments.length;
     this._withDescription = withDescription;
 
-    this.isFavourite = data.isFavourite;
-    this.isWatched = data.isWatched;
-    this.inWatchlist = data.inWatchlist;
+    this.isFavourite = data.user_details.favourite;
+    this.isWatched = data.user_details.already_watched;
+    this.inWatchlist = data.user_details.watchlist;
   }
 
   get minutesFormated() {
@@ -37,9 +37,9 @@ export default class Film extends Component {
         <span class="film-card__duration">${this.minutesFormated}</span>
         <span class="film-card__genre">${this._genre.join(`, `)}</span>
       </p>
-      <img src="./images/posters/${this._poster}.jpg" alt="" class="film-card__poster">
+      <img src="${this._poster}" alt="" class="film-card__poster">
       ${this._withDescription ? `<p class="film-card__description">${this._description}</p>` : ``}
-      <button class="film-card__comments">${this._commentsNumber} comments</button>
+      <button class="film-card__comments">${(this._commentsNumber === 1) ? `1 comment` : `${this._commentsNumber} comments`}</button>
 
       <form class="film-card__controls">
         <button class="film-card__controls-item button film-card__controls-item--add-to-watchlist">Add to watchlist</button>

@@ -3,28 +3,32 @@ import moment from 'moment';
 
 const ENTER_KEYCODE = 13;
 
+const getEmoji = (face) => {
+  return (face) ? {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[face] : ``;
+};
+
 export default class Popup extends Component {
   constructor(data) {
     super();
-    this._title = data.title;
-    this._original = data.originalName;
-    this._release = moment(data.release).format(`D MMMM YYYY`);
-    this._duration = data.duration;
-    this._genre = data.genre;
-    this._poster = data.poster;
-    this._description = data.description;
-    this._rating = data.rating;
-    this._country = data.country;
-    this._age = data.age;
-    this._director = data.director;
-    this._writer = data.writer;
-    this._actors = data.actors;
+    this._title = data.film_info.title;
+    this._original = data.film_info.alternative_title;
+    this._release = moment(new Date(data.film_info.release.date)).format(`D MMMM YYYY`);
+    this._duration = data.film_info.runtime;
+    this._genre = data.film_info.genre;
+    this._poster = data.film_info.poster;
+    this._description = data.film_info.description;
+    this._rating = data.film_info.total_rating;;
+    this._country = data.film_info.release.release_country;
+    this._age = data.film_info.age_rating;
+    this._director = data.film_info.director;
+    this._writer = data.film_info.writers;
+    this._actors = data.film_info.actors;
     this._comments = data.comments;
-    this._userRating = data.userRating;
+    this._userRating = data.user_details.userRating;
 
-    this.isFavourite = data.isFavourite;
-    this.isWatched = data.isWatched;
-    this.inWatchlist = data.inWatchlist;
+    this.isFavourite = data.user_details.favourite;
+    this.isWatched = data.user_details.already_watched;
+    this.inWatchlist = data.user_details.watchlist;
   }
 
   get template() {
@@ -36,7 +40,7 @@ export default class Popup extends Component {
     </div>
     <div class="film-details__info-wrap">
       <div class="film-details__poster">
-        <img class="film-details__poster-img" src="images/posters/${this._poster}.jpg" alt=${this._title}>
+        <img class="film-details__poster-img" src="${this._poster}" alt=${this._title}>
         <p class="film-details__age">${this._age}+</p>
       </div>
 
@@ -108,12 +112,12 @@ export default class Popup extends Component {
       <ul class="film-details__comments-list">
         ${this._comments.map((comment) =>
     `<li class="film-details__comment">
-          <span class="film-details__comment-emoji">${(comment.emoji) ? {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[comment.emoji] : ``}</span>
+          <span class="film-details__comment-emoji">${getEmoji(comment.emotion)}</span>
           <div>
-            <p class="film-details__comment-text">${comment.text}</p>
+            <p class="film-details__comment-text">${comment.comment}</p>
             <p class="film-details__comment-info">
               <span class="film-details__comment-author">${comment.author}</span>
-              <span class="film-details__comment-day">${moment(comment.date, `YYYY-MM-DD`).fromNow()}</span>
+              <span class="film-details__comment-day">${moment(new Date(comment.date)).fromNow()}</span>
             </p>
           </div>
         </li>`).join(``)}
@@ -147,7 +151,7 @@ export default class Popup extends Component {
 
       <div class="film-details__user-score">
         <div class="film-details__user-rating-poster">
-          <img src="images/posters/${this._poster}.jpg" alt="film-poster" class="film-details__user-rating-img">
+          <img src="${this._poster}" alt="film-poster" class="film-details__user-rating-img">
       </div>
 
         <section class="film-details__user-rating-inner">
@@ -175,14 +179,17 @@ export default class Popup extends Component {
       const formData = new FormData(this._element.querySelector(`.film-details__inner`));
       this._comments.push(
           {author: `user`,
-            text: formData.get(`comment`),
-            emoji: formData.get(`comment-emoji`),
+            comment: formData.get(`comment`),
+            emotion: formData.get(`comment-emoji`),
             date: new Date()}
       );
-
-      this._element.remove();
-      document.body.appendChild(this.render());
+      this.update()
     }
+  }
+
+  update() {
+    this._element.remove();
+    document.body.appendChild(this.render());
   }
 
   _onScoreClick(evt) {
