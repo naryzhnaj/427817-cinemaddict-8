@@ -15,7 +15,21 @@ const cardsAmount = 7;
 const cardsExtraAmount = 2;
 
 let allFilms = [];
+const filters = {watchlist: 0, history: 0, favorites: 0};
 
+const countStatus = (data) => {
+  data.forEach((el) => {
+    if (el.user_details.watchlist) {
+      filters.watchlist++;
+    }
+    if (el.user_details.already_watched) {
+      filters.history++;
+    }
+    if (el.user_details.favorite) {
+      filters.favorites++;
+    }
+  });
+};
 /**
  * @description загрузить данные
  *
@@ -26,6 +40,12 @@ const onLoad = (films) => {
   renderCards(topRatedContainer, films.slice(0, cardsExtraAmount));
   renderCards(mostCommentedContainer, films.slice(-cardsExtraAmount));
   allFilms = Array.from(films);
+
+  countStatus(allFilms);
+  // проставить числа в фильтрах
+  Object.keys(filters).forEach((name) =>
+    filterBlock.update(name, filters[name])
+  );
 };
 
 getData(onLoad);
@@ -117,6 +137,9 @@ const filterCards = (filterName) => {
       break;
     case `history`:
       cards = allFilms.filter((card) => card.user_details.already_watched);
+      break;
+    case `favorites`:
+      cards = allFilms.filter((card) => card.user_details.favorite);
   }
   return cards;
 };
@@ -133,18 +156,12 @@ filterBlock.onStatOpen = () => {
 
 filterBlock.onFilterChange = (evt) => {
   evt.preventDefault();
-  const filterName = evt.target.id || ``;
+  const filterName = evt.target.id;
 
-  if (filterName === `all` || filterName === `history` || filterName === `watchlist`) {
+  if (filterName) {
     deleteCards(filmsContainer);
     renderCards(filmsContainer, filterCards(filterName));
   }
 };
 
 mainContainer.insertAdjacentElement(`beforebegin`, filterBlock.render());
-
-const filters = {watchlist: 0, history: 0, favorites: 0};
-// проставить числа в фильтрах
-Object.keys(filters).forEach((name) =>
-  filterBlock.update(name, filters[name])
-);
