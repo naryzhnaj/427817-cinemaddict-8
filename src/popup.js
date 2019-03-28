@@ -17,16 +17,16 @@ export default class Popup extends Component {
     this._genre = data.film_info.genre;
     this._poster = data.film_info.poster;
     this._description = data.film_info.description;
-    this._rating = data.film_info.total_rating;;
+    this._rating = data.film_info.total_rating;
     this._country = data.film_info.release.release_country;
     this._age = data.film_info.age_rating;
     this._director = data.film_info.director;
     this._writer = data.film_info.writers;
     this._actors = data.film_info.actors;
     this._comments = data.comments;
-    this._userRating = data.user_details.userRating;
+    this._userRating = data.user_details.personal_rating;
 
-    this.isFavourite = data.user_details.favourite;
+    this.isFavourite = data.user_details.favorite;
     this.isWatched = data.user_details.already_watched;
     this.inWatchlist = data.user_details.watchlist;
   }
@@ -183,7 +183,7 @@ export default class Popup extends Component {
             emotion: formData.get(`comment-emoji`),
             date: new Date()}
       );
-      this.update()
+      this.update();
     }
   }
 

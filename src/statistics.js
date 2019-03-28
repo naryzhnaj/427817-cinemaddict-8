@@ -9,7 +9,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
  * @return {Array} время с разбивкой на часы и минуты
  */
 const countDuration = (data) => {
-  const time = data.reduce((sum, film) => sum + film.duration, 0);
+  const time = data.reduce((sum, film) => sum + film.film_info.runtime, 0);
   return [Math.floor(time / 60), time % 60];
 };
 
@@ -91,7 +91,7 @@ const drawDiagram = (genres) => {
 const listGenres = (data) => {
   let list = {};
 
-  data.forEach((film) => film.genre.forEach((el) => {
+  data.forEach((film) => film.film_info.genre.forEach((el) => {
     list[el] = (list[el]) ? list[el] + 1 : 1;
   }));
 

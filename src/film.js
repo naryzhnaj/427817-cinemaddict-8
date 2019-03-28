@@ -1,11 +1,10 @@
 import Component from './component.js';
-import moment from 'moment';
 
 export default class Film extends Component {
   constructor(data, withDescription) {
     super();
     this._title = data.film_info.title;
-    this._release = moment(new Date(data.film_info.release.date)).format(`YYYY`);
+    this._release = new Date(data.film_info.release.date).getFullYear();
     this._duration = data.film_info.runtime;
     this._genre = data.film_info.genre;
     this._poster = data.film_info.poster;
@@ -14,7 +13,7 @@ export default class Film extends Component {
     this._commentsNumber = data.comments.length;
     this._withDescription = withDescription;
 
-    this.isFavourite = data.user_details.favourite;
+    this.isFavourite = data.user_details.favorite;
     this.isWatched = data.user_details.already_watched;
     this.inWatchlist = data.user_details.watchlist;
   }

@@ -1,19 +1,34 @@
 import Film from './film.js';
 import Popup from './popup.js';
 import Filter from './filter.js';
-import makeFilmsList from './make-list.js';
+import {getData} from './backend.js';
 import renderStatistics from './statistics.js';
 
-const filters = [
+const filterNames = [
   {name: `all`, fullname: `All movies`},
-  {name: `watchlist`, fullname: `Watchlist`, count: 0},
-  {name: `history`, fullname: `History`, count: 0},
-  {name: `favorites`, fullname: `Favorites`, count: 0},
-  {name: `stats`, fullname: `Stats`}
+  {name: `watchlist`, fullname: `Watchlist`},
+  {name: `history`, fullname: `History`},
+  {name: `favorites`, fullname: `Favorites`}
 ];
 
 const cardsAmount = 7;
 const cardsExtraAmount = 2;
+
+let allFilms = [];
+
+/**
+ * @description загрузить данные
+ *
+ * @param {Object} films данные с сервера
+ */
+const onLoad = (films) => {
+  renderCards(filmsContainer, films.slice(0, cardsAmount));
+  renderCards(topRatedContainer, films.slice(0, cardsExtraAmount));
+  renderCards(mostCommentedContainer, films.slice(-cardsExtraAmount));
+  allFilms = Array.from(films);
+};
+
+getData(onLoad);
 
 const mainContainer = document.querySelector(`.films`);
 const filmsContainer = document.querySelector(`.films-list .films-list__container`);
@@ -60,12 +75,24 @@ const renderCards = (container, films) => {
 
     filmCard.onAddToWatchList = (evt) => {
       evt.preventDefault();
-      film.inWatchlist = !film.inWatchlist;
+      film.user_details.watchlist = !film.user_details.watchlist;
+      if (film.user_details.watchlist) {
+        filters.watchlist++;
+      } else {
+        filters.watchlist--;
+      }
+      filterBlock.update(`watchlist`, filters.watchlist);
     };
 
     filmCard.onMarkAsWatched = (evt) => {
       evt.preventDefault();
-      film.isWatched = !film.isWatched;
+      film.user_details[`already_watched`] = !film.user_details[`already_watched`];
+      if (film.user_details[`already_watched`]) {
+        filters.history++;
+      } else {
+        filters.history--;
+      }
+      filterBlock.update(`history`, filters.history);
     };
 
     container.appendChild(filmCard.render());
@@ -75,50 +102,49 @@ const renderCards = (container, films) => {
 /**
  * @description отфильтровать карточки на странице
  *
- * @param {Array} films все фильмы
  * @param {String} filterName имя выбранного фильтра
  *
  * @return {Array} отфильтрованный массив
  */
-const filterCards = (films, filterName) => {
+const filterCards = (filterName) => {
   let cards;
   switch (filterName) {
     case `all`:
-      cards = films;
+      cards = allFilms;
       break;
     case `watchlist`:
-      cards = films.filter((card) => card.inWatchlist);
+      cards = allFilms.filter((card) => card.user_details.watchlist);
       break;
     case `history`:
-      cards = films.filter((card) => card.isWatched);
+      cards = allFilms.filter((card) => card.user_details.already_watched);
   }
   return cards;
 };
 
-const topRatedFilms = makeFilmsList(cardsExtraAmount);
-const mostCommentedFilms = makeFilmsList(cardsExtraAmount);
-const allFilms = makeFilmsList(cardsAmount);
-const filterBlock = new Filter(filters);
+const filterBlock = new Filter(filterNames);
 
 filterBlock.onStatOpen = () => {
   mainContainer.classList.toggle(`visually-hidden`);
   stat.classList.toggle(`visually-hidden`);
   if (stat.className === `statistic`) {
-    renderStatistics(filterCards(allFilms, `history`), `fanatic`);
+    renderStatistics(filterCards(`history`), `fanatic`);
   }
 };
 
 filterBlock.onFilterChange = (evt) => {
   evt.preventDefault();
-  const filter = evt.target.id;
-  if (filter === `all` || filter === `history` || filter === `watchlist`) {
+  const filterName = evt.target.id || ``;
+
+  if (filterName === `all` || filterName === `history` || filterName === `watchlist`) {
     deleteCards(filmsContainer);
-    renderCards(filmsContainer, filterCards(allFilms, filter));
+    renderCards(filmsContainer, filterCards(filterName));
   }
 };
 
 mainContainer.insertAdjacentElement(`beforebegin`, filterBlock.render());
 
-renderCards(filmsContainer, allFilms);
-renderCards(topRatedContainer, topRatedFilms);
-renderCards(mostCommentedContainer, mostCommentedFilms);
+const filters = {watchlist: 0, history: 0, favorites: 0};
+// проставить числа в фильтрах
+Object.keys(filters).forEach((name) =>
+  filterBlock.update(name, filters[name])
+);
