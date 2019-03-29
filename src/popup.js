@@ -24,8 +24,7 @@ export default class Popup extends Component {
     this._writer = data.film_info.writers;
     this._actors = data.film_info.actors;
     this._comments = data.comments;
-    this._userRating = data.user_details.personal_rating;
-
+    this.userRating = data.user_details.personal_rating;
     this.isFavourite = data.user_details.favorite;
     this.isWatched = data.user_details.already_watched;
     this.inWatchlist = data.user_details.watchlist;
@@ -53,7 +52,7 @@ export default class Popup extends Component {
 
           <div class="film-details__rating">
             <p class="film-details__total-rating">${this._rating}</p>
-            <p class="film-details__user-rating">Your rate ${this._userRating ? this._userRating : ``}</p>
+            <p class="film-details__user-rating">Your rate ${this.userRating ? this.userRating : ``}</p>
           </div>
         </div>
 
@@ -170,31 +169,33 @@ export default class Popup extends Component {
     return popup;
   }
 
-  _onCloseClick() {
-    this._element.remove();
-  }
-
   _onCommentAdd(evt) {
     if (evt.keyCode === ENTER_KEYCODE && evt.ctrlKey) {
       const formData = new FormData(this._element.querySelector(`.film-details__inner`));
-      this._comments.push(
-          {author: `user`,
-            comment: formData.get(`comment`),
-            emotion: formData.get(`comment-emoji`),
-            date: new Date()}
-      );
-      this.update();
+      const comment = {
+        author: `user`,
+        comment: formData.get(`comment`),
+        emotion: formData.get(`comment-emoji`),
+        date: new Date()
+      };
+
+      if (typeof this._onCommentSend === `function`) {
+        this._onCommentSend(comment);
+      }
     }
   }
 
-  update() {
-    this._element.remove();
-    document.body.appendChild(this.render());
+  set onCloseClick(fn) {
+    this._onCloseClick = fn;
+  }
+
+  set onCommentAdd(fn) {
+    this._onCommentSend = fn;
   }
 
   _onScoreClick(evt) {
-    this._userRating = evt.target.value;
-    this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this._userRating}`;
+    this.userRating = evt.target.value;
+    this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this.userRating}`;
   }
 
   _onUndoClick() {

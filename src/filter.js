@@ -19,7 +19,15 @@ export default class Filter extends Component {
   }
 
   set onFilterChange(fn) {
-    this._onFilterChange = fn;
+    this._onFilterClick = fn;
+  }
+
+  _onFilterChange(evt) {
+    evt.preventDefault();
+    const name = evt.target.id;
+    if (name && typeof this._onFilterClick === `function`) {
+      this._onFilterClick(name);
+    }
   }
 
   update(filtername, num) {

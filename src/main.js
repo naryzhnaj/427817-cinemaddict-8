@@ -10,6 +10,11 @@ const filterNames = [
   {name: `history`, fullname: `History`},
   {name: `favorites`, fullname: `Favorites`}
 ];
+const statuses = new Map([
+  [`watchlist`, `watchlist`],
+  [`already_watched`, `history`],
+  [`favorite`, `favorites`]
+]);
 
 const cardsAmount = 7;
 const cardsExtraAmount = 2;
@@ -19,17 +24,14 @@ const filters = {watchlist: 0, history: 0, favorites: 0};
 
 const countStatus = (data) => {
   data.forEach((el) => {
-    if (el.user_details.watchlist) {
-      filters.watchlist++;
-    }
-    if (el.user_details.already_watched) {
-      filters.history++;
-    }
-    if (el.user_details.favorite) {
-      filters.favorites++;
-    }
+    statuses.forEach((val, key) => {
+      if (el.user_details[key]) {
+        filters[val]++;
+      }
+    });
   });
 };
+
 /**
  * @description загрузить данные
  *
@@ -39,7 +41,7 @@ const onLoad = (films) => {
   renderCards(filmsContainer, films.slice(0, cardsAmount));
   renderCards(topRatedContainer, films.slice(0, cardsExtraAmount));
   renderCards(mostCommentedContainer, films.slice(-cardsExtraAmount));
-  allFilms = Array.from(films);
+  allFilms = films;
 
   countStatus(allFilms);
   // проставить числа в фильтрах
@@ -76,7 +78,25 @@ const deleteCards = (container) => {
  */
 const renderPopup = (filmData) => {
   const popup = new Popup(filmData);
-  document.body.appendChild(popup.render());
+
+  popup.onCommentAdd = (newComment) => {
+    filmData.comments.push(newComment);
+
+    document.body.removeChild(placard);
+    placard = popup.render();
+    document.body.appendChild(placard);
+  };
+
+  popup.onCloseClick = () => {
+    filmData.user_details.favorite = popup.isFavourite;
+    filmData.user_details[`already_watched`] = popup.isWatched;
+    filmData.user_details.watchlist = popup.inWatchlist;
+    filmData.user_details[`personal_rating`] = popup.userRating;
+    document.body.removeChild(placard);
+  };
+
+  let placard = popup.render();
+  document.body.appendChild(placard);
 };
 
 /**
@@ -130,7 +150,7 @@ const filterCards = (filterName) => {
   let cards;
   switch (filterName) {
     case `all`:
-      cards = allFilms;
+      cards = allFilms.slice(0, cardsAmount);
       break;
     case `watchlist`:
       cards = allFilms.filter((card) => card.user_details.watchlist);
@@ -154,14 +174,9 @@ filterBlock.onStatOpen = () => {
   }
 };
 
-filterBlock.onFilterChange = (evt) => {
-  evt.preventDefault();
-  const filterName = evt.target.id;
-
-  if (filterName) {
-    deleteCards(filmsContainer);
-    renderCards(filmsContainer, filterCards(filterName));
-  }
+filterBlock.onFilterChange = (filterName) => {
+  deleteCards(filmsContainer);
+  renderCards(filmsContainer, filterCards(filterName));
 };
 
 mainContainer.insertAdjacentElement(`beforebegin`, filterBlock.render());
