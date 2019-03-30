@@ -1,7 +1,7 @@
 import Film from './film.js';
 import Popup from './popup.js';
 import Filter from './filter.js';
-import {getData} from './backend.js';
+import {getData, updateData} from './backend.js';
 import renderStatistics from './statistics.js';
 
 const filterNames = [
@@ -22,6 +22,11 @@ const cardsExtraAmount = 2;
 let allFilms = [];
 const filters = {watchlist: 0, history: 0, favorites: 0};
 
+/**
+ * @description подсчет кол-ва фильмов в списках для панели фильтров
+ *
+ * @param {Array} data все фильмы
+ */
 const countStatus = (data) => {
   data.forEach((el) => {
     statuses.forEach((val, key) => {
@@ -35,12 +40,12 @@ const countStatus = (data) => {
 /**
  * @description загрузить данные
  *
- * @param {Object} films данные с сервера
+ * @param {Array} films данные с сервера
  */
 const onLoad = (films) => {
   renderCards(filmsContainer, films.slice(0, cardsAmount));
-  renderCards(topRatedContainer, films.slice(0, cardsExtraAmount));
-  renderCards(mostCommentedContainer, films.slice(-cardsExtraAmount));
+  renderCards(topRatedContainer, makeExtraList(`rating`));
+  renderCards(mostCommentedContainer, makeExtraList(`comments`));
   allFilms = films;
 
   countStatus(allFilms);
@@ -48,6 +53,23 @@ const onLoad = (films) => {
   Object.keys(filters).forEach((name) =>
     filterBlock.update(name, filters[name])
   );
+};
+
+/**
+ * @description составить список самых популярных фильмов
+ *
+ * @param {String} field рейтинг, по которому сортируется
+ *
+ * @return {Array} отсортированный список нужной длины
+ */
+const makeExtraList = (field) => {
+  const indexArray = allFilms.map((el, i) => i);
+  if (field === `rating`) {
+    indexArray.sort((a, b) => allFilms[b].film_info.total_rating - allFilms[a].film_info.total_rating);
+  } else {
+    indexArray.sort((a, b) => allFilms[b].comments.length - allFilms[a].comments.length);
+  }
+  return indexArray.slice(0, cardsExtraAmount).map((i) => allFilms[i]);
 };
 
 getData(onLoad);
@@ -100,6 +122,23 @@ const renderPopup = (filmData) => {
 };
 
 /**
+ * @description обновить значение счетчика у фильтров
+ *
+ * @param {String} status название кнопки фильтра
+ * @param {Boolean} isActive нужно ли увеличить значение счетчика
+ */
+const updateStatus = (status, isActive) => {
+  const filtername = statuses.get(status);
+  if (isActive) {
+    filters[filtername]++;
+  } else {
+    filters[filtername]--;
+  }
+
+  filterBlock.update(filtername, filters[filtername]);
+};
+
+/**
  * @description отрисовать карточки на странице
  *
  * @param {DOM-элемент} container родительский блок
@@ -113,26 +152,19 @@ const renderCards = (container, films) => {
 
     filmCard.onClick = () => renderPopup(film);
 
-    filmCard.onAddToWatchList = (evt) => {
-      evt.preventDefault();
+    filmCard.onAddToWatchList = () => {
       film.user_details.watchlist = !film.user_details.watchlist;
-      if (film.user_details.watchlist) {
-        filters.watchlist++;
-      } else {
-        filters.watchlist--;
-      }
-      filterBlock.update(`watchlist`, filters.watchlist);
+      updateStatus(`watchlist`, film.user_details.watchlist);
     };
 
-    filmCard.onMarkAsWatched = (evt) => {
-      evt.preventDefault();
+    filmCard.onMarkAsWatched = () => {
       film.user_details[`already_watched`] = !film.user_details[`already_watched`];
-      if (film.user_details[`already_watched`]) {
-        filters.history++;
-      } else {
-        filters.history--;
-      }
-      filterBlock.update(`history`, filters.history);
+      updateStatus(`already_watched`, film.user_details[`already_watched`]);
+    };
+
+    filmCard.onMarkAsFavorite = () => {
+      film.user_details.favorite = !film.user_details.favorite;
+      updateStatus(`favorite`, film.user_details.favorite);
     };
 
     container.appendChild(filmCard.render());

@@ -53,16 +53,36 @@ export default class Film extends Component {
   }
 
   set onAddToWatchList(fn) {
-    this._onAddToWatchList = fn;
+    this._onWatchList = fn;
   }
 
   set onMarkAsWatched(fn) {
-    this._onMarkAsWatched = fn;
+    this._onWatched = fn;
+  }
+
+  set onMarkAsFavorite(fn) {
+    this._onFavorite = fn;
+  }
+
+  _onAddToWatchList(evt) {
+    evt.preventDefault();
+    if (typeof this._onWatchList === `function`) {
+      this._onWatchList();
+    }
+  }
+
+  _onMarkAsWatched(evt) {
+    evt.preventDefault();
+    if (typeof this._onWatched === `function`) {
+      this._onWatched();
+    }
   }
 
   _onMarkAsFavorite(evt) {
     evt.preventDefault();
-    this.isFavourite = !this.isFavourite;
+    if (typeof this._onFavorite === `function`) {
+      this._onFavorite();
+    }
   }
 
   bind() {
