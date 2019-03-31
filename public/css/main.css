@@ -306,11 +306,6 @@ a:hover {
   background-image: url('../images/icon-favorite.png');
 }
 
-
-.film-card:hover .film-card__poster {
-  bottom: calc(100% - 340px);
-}
-
 .film-card:hover .film-card__controls {
   height: 50px;
 }

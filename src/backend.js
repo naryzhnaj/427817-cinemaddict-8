@@ -2,6 +2,13 @@ const URL = `https://es8-demo-srv.appspot.com/moowle/movies`;
 const SUCCESS_STATUS = 200;
 const authorization = `Basic eo0w590ik29889a`;
 
+/**
+ * @description проверка статуса соединения
+ *
+ * @param {Object} response
+ * @throw {Exception}
+ * @return {Object} response
+ */
 const checkStatus = (response) => {
   if (response.status >= SUCCESS_STATUS && response.status < SUCCESS_STATUS + 100) {
     return response;
@@ -15,7 +22,7 @@ const checkStatus = (response) => {
  */
 const onError = () => {
   const node = document.createElement(`div`);
-  node.style = `width: 400px; margin: 0 auto; text-align: center; background-color: red;`;
+  node.style = `width: 800px; margin: 20px auto; padding: 10px; text-align: center; background-color: yellow; color: black; font-size: 24px;`;
   node.textContent = `Something went wrong while loading movies. Check your connection or try again later`;
   document.body.insertAdjacentElement(`afterbegin`, node);
 };
@@ -30,7 +37,7 @@ const onError = () => {
  * @return {Function} callback
  */
 const load = (url, method, body = null) => {
-  let headers = new Headers();
+  let headers = new Headers({'Content-Type': `application/json`});
   headers.append(`Authorization`, authorization);
 
   return fetch(url, {method, body, headers}).then(checkStatus)
@@ -44,9 +51,7 @@ const load = (url, method, body = null) => {
  *
  * @return {Function} callback
  */
-export const getData = (fn) => {
-  return load(URL, `GET`).then((data) => fn(data));
-};
+export const getData = (fn) => load(URL, `GET`).then((data) => fn(data));
 
 /**
  * @description отправка данных на сервер
@@ -55,6 +60,4 @@ export const getData = (fn) => {
  *
  * @return {Function} callback
  */
-export const updateData = (data) => {
-  return load(`${URL}/${data.id}`, `PUT`, JSON.stringify(data));
-};
+export const updateData = (data) => load(`${URL}/${data.id}`, `PUT`, JSON.stringify(data));

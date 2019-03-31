@@ -11,7 +11,8 @@ export default class Filter extends Component {
     nav.className = `main-navigation`;
 
     nav.innerHTML = this._data.map((filter) =>
-      `<a href="#${filter.name}" id="${filter.name}" class="main-navigation__item">${filter.fullname}${(filter.name !== `all`) ? `<span class="main-navigation__item-count"></span>` : ``}</a>`)
+      `<a href="#${filter.name}" id="${filter.name}" class="main-navigation__item${(filter.name === `all`) ? ` main-navigation__item--active` : ``}">
+      ${filter.fullname}${(filter.name !== `all`) ? `<span class="main-navigation__item-count"></span>` : ``}</a>`)
       .join(``);
 
     nav.innerHTML += `<a href="#stats" class="main-navigation__item main-navigation__item--additional">Stats</a>`;
@@ -25,7 +26,10 @@ export default class Filter extends Component {
   _onFilterChange(evt) {
     evt.preventDefault();
     const name = evt.target.id;
+
     if (name && typeof this._onFilterClick === `function`) {
+      this._element.querySelector(`.main-navigation__item--active`).classList.remove(`main-navigation__item--active`);
+      evt.target.classList.add(`main-navigation__item--active`);
       this._onFilterClick(name);
     }
   }
@@ -35,7 +39,13 @@ export default class Filter extends Component {
   }
 
   set onStatOpen(fn) {
-    this._onStatOpen = fn;
+    this._onStat = fn;
+  }
+
+  _onStatOpen() {
+    if (typeof this._onStat === `function`) {
+      this._onStat();
+    }
   }
 
   bind() {

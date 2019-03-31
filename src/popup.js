@@ -145,7 +145,7 @@ export default class Popup extends Component {
 
     <section class="film-details__user-rating-wrap">
       <div class="film-details__user-rating-controls">
-        <span class="film-details__watched-status${this.isWatched ? ` film-details__watched-status--active` : ``}">Already watched</span>
+        <span class="film-details__watched-status film-details__watched-status--active">${this.isWatched ? `Already watched`: `will watch`}</span>
         <button class="film-details__watched-reset" type="button">undo</button>
       </div>
 
@@ -177,7 +177,7 @@ export default class Popup extends Component {
         author: `user`,
         comment: formData.get(`comment`),
         emotion: formData.get(`comment-emoji`),
-        date: new Date()
+        date: Date.now()
       };
 
       if (typeof this._onCommentSend === `function`) {
@@ -201,10 +201,6 @@ export default class Popup extends Component {
     this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this.userRating}`;
   }
 
-  _onUndoClick() {
-    this._element.querySelector(`.film-details__watched-status`).classList.remove(`film-details__watched-status--active`);
-  }
-
   _onStatusClick(evt) {
     const field = {
       favorite: `isFavourite`,
@@ -221,6 +217,5 @@ export default class Popup extends Component {
     this._element.querySelector(`.film-details__user-rating-score`).addEventListener(`change`, this._onScoreClick.bind(this));
     this._element.querySelector(`.film-details__controls`).addEventListener(`change`, this._onStatusClick.bind(this));
     document.addEventListener(`keydown`, this._onKeyPressed.bind(this));
-    this._element.querySelector(`.film-details__watched-reset`).addEventListener(`click`, this._onUndoClick.bind(this));
   }
 }
