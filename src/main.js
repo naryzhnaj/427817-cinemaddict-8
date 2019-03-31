@@ -16,7 +16,7 @@ const statuses = new Map([
   [`favorite`, `favorites`]
 ]);
 
-const cardsAmount = 7;
+const cardsAmount = 5;
 const cardsExtraAmount = 2;
 
 let allFilms = [];
@@ -44,11 +44,12 @@ const countStatus = (data) => {
  */
 const onLoad = (films) => {
   renderCards(filmsContainer, films.slice(0, cardsAmount));
-  renderCards(topRatedContainer, makeExtraList(`rating`));
-  renderCards(mostCommentedContainer, makeExtraList(`comments`));
+  renderCards(topRatedContainer, makeExtraList(films, `rating`));
+  renderCards(mostCommentedContainer, makeExtraList(films, `comments`));
   allFilms = films;
+  document.querySelector(`.footer__statistics`).firstChild.innerHTML = `${films.length} movies inside`;
+  countStatus(films);
 
-  countStatus(allFilms);
   // проставить числа в фильтрах
   Object.keys(filters).forEach((name) =>
     filterBlock.update(name, filters[name])
@@ -58,18 +59,19 @@ const onLoad = (films) => {
 /**
  * @description составить список самых популярных фильмов
  *
+ * @param {Array} data все фильмы
  * @param {String} field рейтинг, по которому сортируется
  *
  * @return {Array} отсортированный список нужной длины
  */
-const makeExtraList = (field) => {
-  const indexArray = allFilms.map((el, i) => i);
+const makeExtraList = (data, field) => {
+  const indexArray = data.map((el, i) => i);
   if (field === `rating`) {
-    indexArray.sort((a, b) => allFilms[b].film_info.total_rating - allFilms[a].film_info.total_rating);
+    indexArray.sort((a, b) => data[b].film_info.total_rating - data[a].film_info.total_rating);
   } else {
-    indexArray.sort((a, b) => allFilms[b].comments.length - allFilms[a].comments.length);
+    indexArray.sort((a, b) => data[b].comments.length - data[a].comments.length);
   }
-  return indexArray.slice(0, cardsExtraAmount).map((i) => allFilms[i]);
+  return indexArray.slice(0, cardsExtraAmount).map((i) => data[i]);
 };
 
 getData(onLoad);
@@ -103,7 +105,6 @@ const renderPopup = (filmData) => {
 
   popup.onCommentAdd = (newComment) => {
     filmData.comments.push(newComment);
-
     document.body.removeChild(placard);
     placard = popup.render();
     document.body.appendChild(placard);
@@ -202,7 +203,7 @@ filterBlock.onStatOpen = () => {
   mainContainer.classList.toggle(`visually-hidden`);
   stat.classList.toggle(`visually-hidden`);
   if (stat.className === `statistic`) {
-    renderStatistics(filterCards(`history`), `fanatic`);
+    renderStatistics(filterCards(`history`));
   }
 };
 
