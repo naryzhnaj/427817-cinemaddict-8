@@ -44,6 +44,7 @@ export default class Filter extends Component {
 
   _onStatOpen() {
     if (typeof this._onStat === `function`) {
+      this._element.querySelector(`.main-navigation__item--additional`).classList.toggle(`main-navigation__item--active`);
       this._onStat();
     }
   }

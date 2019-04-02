@@ -145,7 +145,7 @@ export default class Popup extends Component {
 
     <section class="film-details__user-rating-wrap">
       <div class="film-details__user-rating-controls">
-        <span class="film-details__watched-status film-details__watched-status--active">${this.isWatched ? `Already watched`: `will watch`}</span>
+        <span class="film-details__watched-status film-details__watched-status--active">${this.isWatched ? `Already watched` : `will watch`}</span>
         <button class="film-details__watched-reset" type="button">undo</button>
       </div>
 
@@ -184,7 +184,7 @@ export default class Popup extends Component {
         this._onCommentSend(comment);
       }
     } else if (evt.keyCode === ESC_KEYCODE) {
-      this._element.remove();
+      this._onCloseClick();
     }
   }
 
@@ -192,8 +192,25 @@ export default class Popup extends Component {
     this._close = fn;
   }
 
+  _onCloseClick() {
+    if (typeof this._close === `function`) {
+      this._close();
+      this._element.remove();
+    }
+  }
+
   set onCommentAdd(fn) {
     this._onCommentSend = fn;
+  }
+
+  _onUndoClick() {
+    if (this._comments.slice(-1).author === `user` && typeof this._onCommentDelete === `function`) {
+      this._onCommentDelete();
+    }
+  }
+
+  set onCommentDelete(fn) {
+    this._onCommentDelete = fn;
   }
 
   _onScoreClick(evt) {
@@ -213,9 +230,10 @@ export default class Popup extends Component {
   }
 
   bind() {
-    this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._close.bind(this));
+    this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
     this._element.querySelector(`.film-details__user-rating-score`).addEventListener(`change`, this._onScoreClick.bind(this));
     this._element.querySelector(`.film-details__controls`).addEventListener(`change`, this._onStatusClick.bind(this));
     document.addEventListener(`keydown`, this._onKeyPressed.bind(this));
+    this._element.querySelector(`.film-details__watched-reset`).addEventListener(`click`, this._onUndoClick.bind(this));
   }
 }
