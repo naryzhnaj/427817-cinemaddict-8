@@ -84,6 +84,13 @@ const deleteCards = (container) => {
   });
 };
 
+const copyRating = (popup, userData) => {
+  userData.favorite = popup.isFavourite;
+  userData[`already_watched`] = popup.isWatched;
+  userData.watchlist = popup.inWatchlist;
+  userData[`personal_rating`] = popup.userRating;
+};
+
 /**
  * @description отрисовать попап с подробностями фильма
  *
@@ -97,24 +104,24 @@ const renderPopup = (filmData) => {
   const popup = new Popup(filmData);
 
   popup.onCloseClick = () => {
-    filmData[`user_details`] = {
-      favorite: popup.isFavourite,
-      [`already_watched`]: popup.isWatched,
-      watchlist: popup.inWatchlist,
-      [`personal_rating`]: popup.userRating};
+    copyRating(popup, filmData[`user_details`]);
   };
 
   popup.onCommentAdd = (newComment) => {
     filmData.comments.push(newComment);
+    copyRating(popup, filmData[`user_details`]);
     updateData(filmData).then((data) => {
-      filmData = data;
+      popup.update(data.comments);
+      filmData.comments = data.comments;
     });
   };
 
   popup.onCommentDelete = () => {
     filmData.comments.pop();
+    copyRating(popup, filmData[`user_details`]);
     updateData(filmData).then((data) => {
-      filmData = data;
+      popup.update(data.comments);
+      filmData.comments = data.comments;
     });
   };
 
@@ -219,13 +226,13 @@ const showMore = () => {
  * @description показать карточки, отфильтрованные по названию
  */
 const titleSearch = () => {
-  activeList = new RegExp(searchField.value,`ig`);
+  activeList = new RegExp(searchField.value, `ig`);
   deleteCards(filmsContainer);
   renderCards(filmsContainer, allFilms.filter((el) => activeList.test(el.film_info.title)));
 };
 
 const loadMessage = document.createElement(`div`);
-loadMessage.style = `width: 800px; margin: 20px auto; padding: 10px; text-align: center; background-color: grey; color: black; font-size: 24px;`;
+loadMessage.style = `width: 800px; margin: 20px auto; padding: 10px; text-align: center; background-color: yellow; color: black; font-size: 24px;`;
 loadMessage.textContent = `Loading movies...`;
 document.body.appendChild(loadMessage);
 

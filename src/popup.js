@@ -4,8 +4,9 @@ import moment from 'moment';
 const ENTER_KEYCODE = 13;
 const ESC_KEYCODE = 27;
 
-const getEmoji = (face) => {
-  return (face) ? {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[face] : ``;
+const getEmoji = (emotion) => {
+  const face = {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[emotion];
+  return (face) ? face : ``;
 };
 
 export default class Popup extends Component {
@@ -29,6 +30,20 @@ export default class Popup extends Component {
     this.isFavourite = data.user_details.favorite;
     this.isWatched = data.user_details.already_watched;
     this.inWatchlist = data.user_details.watchlist;
+  }
+
+  get renderComments() {
+    return `${this._comments.map((comment) =>
+      `<li class="film-details__comment">
+      <span class="film-details__comment-emoji">${getEmoji(comment.emotion)}</span>
+      <div>
+        <p class="film-details__comment-text">${comment.comment}</p>
+        <p class="film-details__comment-info">
+          <span class="film-details__comment-author">${comment.author}</span>
+          <span class="film-details__comment-day">${moment(new Date(comment.date)).fromNow()}</span>
+        </p>
+      </div>
+    </li>`).join(``)}`;
   }
 
   get template() {
@@ -108,21 +123,7 @@ export default class Popup extends Component {
 
     <section class="film-details__comments-wrap">
       <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
-
-      <ul class="film-details__comments-list">
-        ${this._comments.map((comment) =>
-    `<li class="film-details__comment">
-          <span class="film-details__comment-emoji">${getEmoji(comment.emotion)}</span>
-          <div>
-            <p class="film-details__comment-text">${comment.comment}</p>
-            <p class="film-details__comment-info">
-              <span class="film-details__comment-author">${comment.author}</span>
-              <span class="film-details__comment-day">${moment(new Date(comment.date)).fromNow()}</span>
-            </p>
-          </div>
-        </li>`).join(``)}
-      </ul>
-
+      <ul class="film-details__comments-list">${this.renderComments}</ul>
       <div class="film-details__new-comment">
         <div>
           <label for="add-emoji" class="film-details__add-emoji-label">😐</label>
@@ -170,6 +171,11 @@ export default class Popup extends Component {
     return popup;
   }
 
+  update(comments) {
+    this._comments = comments;
+    this._element.querySelector(`.film-details__comments-list`).innerHTML = this.renderComments;
+  }
+
   _onKeyPressed(evt) {
     if (evt.keyCode === ENTER_KEYCODE && evt.ctrlKey) {
       const formData = new FormData(this._element.querySelector(`.film-details__inner`));
@@ -182,6 +188,8 @@ export default class Popup extends Component {
 
       if (typeof this._onCommentSend === `function`) {
         this._onCommentSend(comment);
+        this._element.querySelector(`.film-details__comment-input`).value = ``;
+        this._element.querySelector(`.film-details__controls`).classList.remove(`visually-hidden`);
       }
     } else if (evt.keyCode === ESC_KEYCODE) {
       this._onCloseClick();
@@ -204,7 +212,8 @@ export default class Popup extends Component {
   }
 
   _onUndoClick() {
-    if (this._comments.slice(-1).author === `user` && typeof this._onCommentDelete === `function`) {
+    const last = this._comments.slice(-1)[0];
+    if (last.author === `user` && typeof this._onCommentDelete === `function`) {
       this._onCommentDelete();
     }
   }
