@@ -9,7 +9,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
  * @return {Array} время с разбивкой на часы и минуты
  */
 const countDuration = (data) => {
-  const time = data.reduce((sum, film) => sum + film.duration, 0);
+  const time = data.reduce((sum, film) => sum + film.film_info.runtime, 0);
   return [Math.floor(time / 60), time % 60];
 };
 
@@ -91,7 +91,7 @@ const drawDiagram = (genres) => {
 const listGenres = (data) => {
   let list = {};
 
-  data.forEach((film) => film.genre.forEach((el) => {
+  data.forEach((film) => film.film_info.genre.forEach((el) => {
     list[el] = (list[el]) ? list[el] + 1 : 1;
   }));
 
@@ -110,7 +110,7 @@ const listGenres = (data) => {
  */
 const drawStat = (count, time, userStatus, topGenre) =>
   `<p class="statistic__rank">Your rank <span class="statistic__rank-label">${userStatus}</span></p>
-  <form action="https://echo.htmlacademy.ru/" method="get" class="statistic__filters visually-hidden">
+  <form action="https://echo.htmlacademy.ru/" method="get" class="statistic__filters">
     <p class="statistic__filters-description">Show stats:</p>
 
     <input type="radio" class="statistic__filters-input visually-hidden" name="statistic-filter" id="statistic-all-time" value="all-time" checked>
@@ -164,11 +164,20 @@ const findTop = (data) => {
  * @description главная ф-ия для работы со статистикой
  *
  * @param {Array} films массив с фильмами
- * @param {String} userStatus статус пользователя
  */
-export default (films, userStatus) => {
+export default (films) => {
   const genres = listGenres(films);
   const time = countDuration(films);
-  document.querySelector(`.statistic`).innerHTML = drawStat(films.length, time, userStatus, findTop(genres));
+  let userStatus = ``;
+  const amount = films.length;
+  if (amount < 11) {
+    userStatus = `novice`;
+  } else if (amount < 21) {
+    userStatus = `fan`;
+  } else {
+    userStatus = `movie buff`;
+  }
+
+  document.querySelector(`.statistic`).innerHTML = drawStat(amount, time, userStatus, findTop(genres));
   drawDiagram(genres);
 };

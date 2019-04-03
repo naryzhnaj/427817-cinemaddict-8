@@ -1,25 +1,75 @@
 import Film from './film.js';
 import Popup from './popup.js';
 import Filter from './filter.js';
-import makeFilmsList from './make-list.js';
+import {getData, updateData} from './backend.js';
 import renderStatistics from './statistics.js';
 
-const filters = [
+const filterNames = [
   {name: `all`, fullname: `All movies`},
-  {name: `watchlist`, fullname: `Watchlist`, count: 0},
-  {name: `history`, fullname: `History`, count: 0},
-  {name: `favorites`, fullname: `Favorites`, count: 0},
-  {name: `stats`, fullname: `Stats`}
+  {name: `watchlist`, fullname: `Watchlist`},
+  {name: `history`, fullname: `History`},
+  {name: `favorites`, fullname: `Favorites`}
 ];
+const statuses = new Map([
+  [`watchlist`, `watchlist`],
+  [`already_watched`, `history`],
+  [`favorite`, `favorites`]
+]);
+const CARDS_AMOUNT = 5;
+const CARDS_EXTRA_AMOUNT = 2;
 
-const cardsAmount = 7;
-const cardsExtraAmount = 2;
+/**
+ * @description подсчет кол-ва фильмов в списках для панели фильтров
+ *
+ * @param {Array} data все фильмы
+ */
+const countStatus = (data) => {
+  data.forEach((el) => {
+    statuses.forEach((val, key) => {
+      if (el.user_details[key]) {
+        filters[val]++;
+      }
+    });
+  });
+};
 
-const mainContainer = document.querySelector(`.films`);
-const filmsContainer = document.querySelector(`.films-list .films-list__container`);
-const topRatedContainer = document.querySelector(`.films-list--extra .films-list__container`);
-const mostCommentedContainer = document.querySelector(`.films-list--extra:last-child .films-list__container`);
-const stat = document.querySelector(`.statistic`);
+/**
+ * @description отрисовка данных после успешной загрузки
+ *
+ * @param {Array} films данные с сервера
+ */
+const onLoad = (films) => {
+  document.body.removeChild(loadMessage);
+  renderCards(topRatedContainer, makeExtraList(films, `rating`));
+  renderCards(mostCommentedContainer, makeExtraList(films, `comments`));
+  renderCards(filmsContainer, films);
+
+  allFilms = films;
+  document.querySelector(`.footer__statistics`).firstChild.innerHTML = `${films.length} movies inside`;
+  countStatus(films);
+
+  Object.keys(filters).forEach((name) =>
+    filterBlock.update(name, filters[name])
+  );
+};
+
+/**
+ * @description составить список самых популярных фильмов
+ *
+ * @param {Array} data все фильмы
+ * @param {String} field рейтинг, по которому сортируется
+ *
+ * @return {Array} отсортированный список нужной длины
+ */
+const makeExtraList = (data, field) => {
+  const indexArray = data.map((el, i) => i);
+  if (field === `rating`) {
+    indexArray.sort((a, b) => data[b].film_info.total_rating - data[a].film_info.total_rating);
+  } else {
+    indexArray.sort((a, b) => data[b].comments.length - data[a].comments.length);
+  }
+  return indexArray.slice(0, CARDS_EXTRA_AMOUNT).map((i) => data[i]);
+};
 
 /**
  * @description удалить текущие карточки
@@ -28,10 +78,17 @@ const stat = document.querySelector(`.statistic`);
  */
 const deleteCards = (container) => {
   const cards = container.querySelectorAll(`.film-card`);
-
+  renderedAmount = 0;
   cards.forEach((card) => {
     card.remove();
   });
+};
+
+const copyRating = (popup, userData) => {
+  userData.favorite = popup.isFavourite;
+  userData[`already_watched`] = popup.isWatched;
+  userData.watchlist = popup.inWatchlist;
+  userData[`personal_rating`] = popup.userRating;
 };
 
 /**
@@ -40,8 +97,57 @@ const deleteCards = (container) => {
  * @param {Object} filmData данные соответствующего фильма
  */
 const renderPopup = (filmData) => {
+  let placard = document.querySelector(`.film-details`);
+  if (placard) {
+    document.body.removeChild(placard);
+  }
   const popup = new Popup(filmData);
-  document.body.appendChild(popup.render());
+
+  popup.onCloseClick = () => {
+    copyRating(popup, filmData[`user_details`]);
+  };
+
+  popup.onCommentAdd = (newComment) => {
+    filmData.comments.push(newComment);
+    copyRating(popup, filmData[`user_details`]);
+    updateData(filmData).then((data) => {
+      popup.update(data.comments);
+      filmData.comments = data.comments;
+    });
+  };
+
+  popup.onCommentDelete = () => {
+    filmData.comments.pop();
+    copyRating(popup, filmData[`user_details`]);
+    updateData(filmData).then((data) => {
+      popup.update(data.comments);
+      filmData.comments = data.comments;
+    });
+  };
+
+  placard = popup.render();
+  document.body.appendChild(placard);
+};
+
+/**
+ * @description отрисовать изменения при клике на рейтинги
+ *
+ * @param {String} status название рейтинга
+ * @param {Boolean} isActive нужно ли увеличить значение счетчика
+ */
+const updateStatus = (status, isActive) => {
+  const filtername = statuses.get(status);
+  if (isActive) {
+    filters[filtername]++;
+  } else {
+    filters[filtername]--;
+  }
+  filterBlock.update(filtername, filters[filtername]);
+
+  if (filtername === activeList) {
+    deleteCards(filmsContainer);
+    renderCards(filmsContainer, filterCards(activeList));
+  }
 };
 
 /**
@@ -52,73 +158,128 @@ const renderPopup = (filmData) => {
  */
 const renderCards = (container, films) => {
   const inMainBlock = (container === filmsContainer);
+  const cards = films.slice(renderedAmount, renderedAmount + CARDS_AMOUNT);
 
-  films.forEach((film) => {
+  cards.forEach((film) => {
     const filmCard = new Film(film, inMainBlock);
 
     filmCard.onClick = () => renderPopup(film);
 
-    filmCard.onAddToWatchList = (evt) => {
-      evt.preventDefault();
-      film.inWatchlist = !film.inWatchlist;
+    filmCard.onAddToWatchList = () => {
+      film.user_details.watchlist = !film.user_details.watchlist;
+      updateStatus(`watchlist`, film.user_details.watchlist);
     };
 
-    filmCard.onMarkAsWatched = (evt) => {
-      evt.preventDefault();
-      film.isWatched = !film.isWatched;
+    filmCard.onMarkAsWatched = () => {
+      film.user_details[`already_watched`] = !film.user_details[`already_watched`];
+      updateStatus(`already_watched`, film.user_details[`already_watched`]);
+    };
+
+    filmCard.onMarkAsFavorite = () => {
+      film.user_details.favorite = !film.user_details.favorite;
+      updateStatus(`favorite`, film.user_details.favorite);
     };
 
     container.appendChild(filmCard.render());
   });
+  if (inMainBlock) {
+    renderedAmount += CARDS_AMOUNT;
+    if (films.length <= renderedAmount) {
+      showMoreButton.classList.add(`visually-hidden`);
+    }
+  }
 };
 
 /**
  * @description отфильтровать карточки на странице
  *
- * @param {Array} films все фильмы
  * @param {String} filterName имя выбранного фильтра
  *
  * @return {Array} отфильтрованный массив
  */
-const filterCards = (films, filterName) => {
+const filterCards = (filterName) => {
   let cards;
   switch (filterName) {
     case `all`:
-      cards = films;
+      cards = allFilms;
       break;
     case `watchlist`:
-      cards = films.filter((card) => card.inWatchlist);
+      cards = allFilms.filter((card) => card.user_details.watchlist);
       break;
     case `history`:
-      cards = films.filter((card) => card.isWatched);
+      cards = allFilms.filter((card) => card.user_details.already_watched);
+      break;
+    case `favorites`:
+      cards = allFilms.filter((card) => card.user_details.favorite);
   }
   return cards;
 };
 
-const topRatedFilms = makeFilmsList(cardsExtraAmount);
-const mostCommentedFilms = makeFilmsList(cardsExtraAmount);
-const allFilms = makeFilmsList(cardsAmount);
-const filterBlock = new Filter(filters);
+/**
+ * @description показать еще карточки при нажатии на кнопку
+ */
+const showMore = () => {
+  renderCards(filmsContainer, filterCards(activeList));
+};
 
+/**
+ * @description показать карточки, отфильтрованные по названию
+ */
+const titleSearch = () => {
+  activeList = new RegExp(searchField.value, `ig`);
+  deleteCards(filmsContainer);
+  renderCards(filmsContainer, allFilms.filter((el) => activeList.test(el.film_info.title)));
+};
+
+const loadMessage = document.createElement(`div`);
+loadMessage.style = `width: 800px; margin: 20px auto; padding: 10px; text-align: center; background-color: yellow; color: black; font-size: 24px;`;
+loadMessage.textContent = `Loading movies...`;
+document.body.appendChild(loadMessage);
+
+const mainContainer = document.querySelector(`.films`);
+const filmsContainer = document.querySelector(`.films-list .films-list__container`);
+const topRatedContainer = document.querySelector(`.films-list--extra .films-list__container`);
+const mostCommentedContainer = document.querySelector(`.films-list--extra:last-child .films-list__container`);
+const stat = document.querySelector(`.statistic`);
+const showMoreButton = document.querySelector(`.films-list__show-more`);
+const searchField = document.querySelector(`.search__field`);
+
+let renderedAmount = 0;
+let allFilms = [];
+let activeList = `all`;
+const filters = {watchlist: 0, history: 0, favorites: 0};
+getData(onLoad);
+const filterBlock = new Filter(filterNames);
+
+/**
+ * @description показать/скрыть статистику при нажатии на кнопку Stat
+ */
 filterBlock.onStatOpen = () => {
   mainContainer.classList.toggle(`visually-hidden`);
   stat.classList.toggle(`visually-hidden`);
-  if (stat.className === `statistic`) {
-    renderStatistics(filterCards(allFilms, `history`), `fanatic`);
+
+  if (!stat.classList.contains(`visually-hidden`)) {
+    renderStatistics(filterCards(`history`));
   }
 };
 
-filterBlock.onFilterChange = (evt) => {
-  evt.preventDefault();
-  const filter = evt.target.id;
-  if (filter === `all` || filter === `history` || filter === `watchlist`) {
+/**
+ * @description при переключении фильтра блок очищается и выводится новый список
+ *
+ * @param {String} filterName имя выбранного фильтра
+ */
+filterBlock.onFilterChange = (filterName) => {
+  if (activeList !== filterName) {
     deleteCards(filmsContainer);
-    renderCards(filmsContainer, filterCards(allFilms, filter));
+    activeList = filterName;
+    renderCards(filmsContainer, filterCards(filterName));
+
+    if (showMoreButton.classList.contains(`visually-hidden`)) {
+      showMoreButton.classList.remove(`visually-hidden`);
+    }
   }
 };
 
 mainContainer.insertAdjacentElement(`beforebegin`, filterBlock.render());
-
-renderCards(filmsContainer, allFilms);
-renderCards(topRatedContainer, topRatedFilms);
-renderCards(mostCommentedContainer, mostCommentedFilms);
+showMoreButton.addEventListener(`click`, showMore);
+searchField.addEventListener(`input`, titleSearch);

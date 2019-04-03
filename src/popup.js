@@ -2,29 +2,48 @@ import Component from './component.js';
 import moment from 'moment';
 
 const ENTER_KEYCODE = 13;
+const ESC_KEYCODE = 27;
+
+const getEmoji = (emotion) => {
+  const face = {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[emotion];
+  return (face) ? face : ``;
+};
 
 export default class Popup extends Component {
   constructor(data) {
     super();
-    this._title = data.title;
-    this._original = data.originalName;
-    this._release = moment(data.release).format(`D MMMM YYYY`);
-    this._duration = data.duration;
-    this._genre = data.genre;
-    this._poster = data.poster;
-    this._description = data.description;
-    this._rating = data.rating;
-    this._country = data.country;
-    this._age = data.age;
-    this._director = data.director;
-    this._writer = data.writer;
-    this._actors = data.actors;
+    this._title = data.film_info.title;
+    this._original = data.film_info.alternative_title;
+    this._release = moment(new Date(data.film_info.release.date)).format(`DD MMMM YYYY`);
+    this._duration = data.film_info.runtime;
+    this._genre = data.film_info.genre;
+    this._poster = data.film_info.poster;
+    this._description = data.film_info.description;
+    this._rating = data.film_info.total_rating;
+    this._country = data.film_info.release.release_country;
+    this._age = data.film_info.age_rating;
+    this._director = data.film_info.director;
+    this._writer = data.film_info.writers;
+    this._actors = data.film_info.actors;
     this._comments = data.comments;
-    this._userRating = data.userRating;
+    this.userRating = data.user_details.personal_rating;
+    this.isFavourite = data.user_details.favorite;
+    this.isWatched = data.user_details.already_watched;
+    this.inWatchlist = data.user_details.watchlist;
+  }
 
-    this.isFavourite = data.isFavourite;
-    this.isWatched = data.isWatched;
-    this.inWatchlist = data.inWatchlist;
+  get renderComments() {
+    return `${this._comments.map((comment) =>
+      `<li class="film-details__comment">
+      <span class="film-details__comment-emoji">${getEmoji(comment.emotion)}</span>
+      <div>
+        <p class="film-details__comment-text">${comment.comment}</p>
+        <p class="film-details__comment-info">
+          <span class="film-details__comment-author">${comment.author}</span>
+          <span class="film-details__comment-day">${moment(new Date(comment.date)).fromNow()}</span>
+        </p>
+      </div>
+    </li>`).join(``)}`;
   }
 
   get template() {
@@ -36,7 +55,7 @@ export default class Popup extends Component {
     </div>
     <div class="film-details__info-wrap">
       <div class="film-details__poster">
-        <img class="film-details__poster-img" src="images/posters/${this._poster}.jpg" alt=${this._title}>
+        <img class="film-details__poster-img" src="${this._poster}" alt=${this._title}>
         <p class="film-details__age">${this._age}+</p>
       </div>
 
@@ -49,7 +68,7 @@ export default class Popup extends Component {
 
           <div class="film-details__rating">
             <p class="film-details__total-rating">${this._rating}</p>
-            <p class="film-details__user-rating">Your rate ${this._userRating ? this._userRating : ``}</p>
+            <p class="film-details__user-rating">Your rate ${this.userRating ? this.userRating : ``}</p>
           </div>
         </div>
 
@@ -90,7 +109,7 @@ export default class Popup extends Component {
       </div>
     </div>
 
-    <section class="film-details__controls">
+    <section class="film-details__controls visually-hidden">
       <input type="checkbox" class="film-details__control-input visually-hidden" id="toWatchlist"
         ${this.inWatchlist ? `checked` : ``} name="toWatchlist">
       <label for="toWatchlist" class="film-details__control-label film-details__control-label--watchlist">Add to watchlist</label>
@@ -104,21 +123,7 @@ export default class Popup extends Component {
 
     <section class="film-details__comments-wrap">
       <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${this._comments.length}</span></h3>
-
-      <ul class="film-details__comments-list">
-        ${this._comments.map((comment) =>
-    `<li class="film-details__comment">
-          <span class="film-details__comment-emoji">${(comment.emoji) ? {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[comment.emoji] : ``}</span>
-          <div>
-            <p class="film-details__comment-text">${comment.text}</p>
-            <p class="film-details__comment-info">
-              <span class="film-details__comment-author">${comment.author}</span>
-              <span class="film-details__comment-day">${moment(comment.date, `YYYY-MM-DD`).fromNow()}</span>
-            </p>
-          </div>
-        </li>`).join(``)}
-      </ul>
-
+      <ul class="film-details__comments-list">${this.renderComments}</ul>
       <div class="film-details__new-comment">
         <div>
           <label for="add-emoji" class="film-details__add-emoji-label">😐</label>
@@ -141,13 +146,13 @@ export default class Popup extends Component {
 
     <section class="film-details__user-rating-wrap">
       <div class="film-details__user-rating-controls">
-        <span class="film-details__watched-status${this.isWatched ? ` film-details__watched-status--active` : ``}">Already watched</span>
+        <span class="film-details__watched-status film-details__watched-status--active">${this.isWatched ? `Already watched` : `will watch`}</span>
         <button class="film-details__watched-reset" type="button">undo</button>
       </div>
 
       <div class="film-details__user-score">
         <div class="film-details__user-rating-poster">
-          <img src="images/posters/${this._poster}.jpg" alt="film-poster" class="film-details__user-rating-img">
+          <img src="${this._poster}" alt="film-poster" class="film-details__user-rating-img">
       </div>
 
         <section class="film-details__user-rating-inner">
@@ -166,32 +171,60 @@ export default class Popup extends Component {
     return popup;
   }
 
-  _onCloseClick() {
-    this._element.remove();
+  update(comments) {
+    this._comments = comments;
+    this._element.querySelector(`.film-details__comments-list`).innerHTML = this.renderComments;
   }
 
-  _onCommentAdd(evt) {
+  _onKeyPressed(evt) {
     if (evt.keyCode === ENTER_KEYCODE && evt.ctrlKey) {
       const formData = new FormData(this._element.querySelector(`.film-details__inner`));
-      this._comments.push(
-          {author: `user`,
-            text: formData.get(`comment`),
-            emoji: formData.get(`comment-emoji`),
-            date: new Date()}
-      );
+      const comment = {
+        author: `user`,
+        comment: formData.get(`comment`),
+        emotion: formData.get(`comment-emoji`),
+        date: Date.now()
+      };
 
-      this._element.remove();
-      document.body.appendChild(this.render());
+      if (typeof this._onCommentSend === `function`) {
+        this._onCommentSend(comment);
+        this._element.querySelector(`.film-details__comment-input`).value = ``;
+        this._element.querySelector(`.film-details__controls`).classList.remove(`visually-hidden`);
+      }
+    } else if (evt.keyCode === ESC_KEYCODE) {
+      this._onCloseClick();
     }
   }
 
-  _onScoreClick(evt) {
-    this._userRating = evt.target.value;
-    this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this._userRating}`;
+  set onCloseClick(fn) {
+    this._close = fn;
+  }
+
+  _onCloseClick() {
+    if (typeof this._close === `function`) {
+      this._close();
+      this._element.remove();
+    }
+  }
+
+  set onCommentAdd(fn) {
+    this._onCommentSend = fn;
   }
 
   _onUndoClick() {
-    this._element.querySelector(`.film-details__watched-status`).classList.remove(`film-details__watched-status--active`);
+    const last = this._comments.slice(-1)[0];
+    if (last.author === `user` && typeof this._onCommentDelete === `function`) {
+      this._onCommentDelete();
+    }
+  }
+
+  set onCommentDelete(fn) {
+    this._onCommentDelete = fn;
+  }
+
+  _onScoreClick(evt) {
+    this.userRating = evt.target.value;
+    this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this.userRating}`;
   }
 
   _onStatusClick(evt) {
@@ -209,7 +242,7 @@ export default class Popup extends Component {
     this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
     this._element.querySelector(`.film-details__user-rating-score`).addEventListener(`change`, this._onScoreClick.bind(this));
     this._element.querySelector(`.film-details__controls`).addEventListener(`change`, this._onStatusClick.bind(this));
-    this._element.addEventListener(`keydown`, this._onCommentAdd.bind(this));
+    document.addEventListener(`keydown`, this._onKeyPressed.bind(this));
     this._element.querySelector(`.film-details__watched-reset`).addEventListener(`click`, this._onUndoClick.bind(this));
   }
 }
