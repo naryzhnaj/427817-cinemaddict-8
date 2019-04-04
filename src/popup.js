@@ -189,6 +189,7 @@ export default class Popup extends Component {
       if (typeof this._onCommentSend === `function`) {
         this._onCommentSend(comment);
         this._element.querySelector(`.film-details__comment-input`).value = ``;
+        this._element.querySelector(`.film-details__add-emoji-label`).innerHTML = `😐`;
         this._element.querySelector(`.film-details__controls`).classList.remove(`visually-hidden`);
       }
     } else if (evt.keyCode === ESC_KEYCODE) {
@@ -218,6 +219,22 @@ export default class Popup extends Component {
     }
   }
 
+  shake() {
+    const ANIMATION_TIMEOUT = 600;
+    this._element.style.animation = `shake ${ANIMATION_TIMEOUT / 1000}s`;
+
+    setTimeout(() => {
+      this._element.style.animation = ``;
+    }, ANIMATION_TIMEOUT);
+  }
+
+  block() {
+    this._element.querySelector(`.film-details__inner`).disabled = true;
+  }
+  unblock() {
+    this._element.querySelector(`.film-details__inner`).disabled = false;
+  }
+
   set onCommentDelete(fn) {
     this._onCommentDelete = fn;
   }
@@ -225,6 +242,10 @@ export default class Popup extends Component {
   _onScoreClick(evt) {
     this.userRating = evt.target.value;
     this._element.querySelector(`.film-details__user-rating`).innerHTML = `Your rate ${this.userRating}`;
+  }
+
+  _onEmojiClick(evt) {
+    this._element.querySelector(`.film-details__add-emoji-label`).innerHTML = getEmoji(evt.target.value);
   }
 
   _onStatusClick(evt) {
@@ -244,5 +265,6 @@ export default class Popup extends Component {
     this._element.querySelector(`.film-details__controls`).addEventListener(`change`, this._onStatusClick.bind(this));
     document.addEventListener(`keydown`, this._onKeyPressed.bind(this));
     this._element.querySelector(`.film-details__watched-reset`).addEventListener(`click`, this._onUndoClick.bind(this));
+    this._element.querySelector(`.film-details__emoji-list`).addEventListener(`click`, this._onEmojiClick.bind(this));
   }
 }

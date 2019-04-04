@@ -110,18 +110,24 @@ const renderPopup = (filmData) => {
   popup.onCommentAdd = (newComment) => {
     filmData.comments.push(newComment);
     copyRating(popup, filmData[`user_details`]);
+    popup.block();
+
     updateData(filmData).then((data) => {
       popup.update(data.comments);
       filmData.comments = data.comments;
-    });
+      popup.unblock();
+    }).catch(() => popup.shake());
   };
 
   popup.onCommentDelete = () => {
     filmData.comments.pop();
     copyRating(popup, filmData[`user_details`]);
+    popup.block();
+
     updateData(filmData).then((data) => {
       popup.update(data.comments);
       filmData.comments = data.comments;
+      popup.unblock();
     });
   };
 
