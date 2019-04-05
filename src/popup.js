@@ -191,6 +191,7 @@ export default class Popup extends Component {
         this._element.querySelector(`.film-details__comment-input`).value = ``;
         this._element.querySelector(`.film-details__add-emoji-label`).innerHTML = `😐`;
         this._element.querySelector(`.film-details__controls`).classList.remove(`visually-hidden`);
+        this._element.querySelector(`.film-details__watched-status`).innerHTML = `Comment added`;
       }
     } else if (evt.keyCode === ESC_KEYCODE) {
       this._onCloseClick();
@@ -216,6 +217,7 @@ export default class Popup extends Component {
     const last = this._comments.slice(-1)[0];
     if (last.author === `user` && typeof this._onCommentDelete === `function`) {
       this._onCommentDelete();
+      this._element.querySelector(`.film-details__watched-status`).innerHTML = `Comment deleted`;
     }
   }
 

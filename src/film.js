@@ -19,7 +19,7 @@ export default class Film extends Component {
   }
 
   get minutesFormated() {
-    return `${Math.floor(this._duration / 60)}h&nbsp;${this._duration % 60}m`;
+    return `${Math.floor(this._duration / 60)}:${this._duration % 60}`;
   }
 
   get template() {

@@ -17,13 +17,15 @@ const countDuration = (data) => {
  * @description отрисовка диаграммы
  *
  * @param {Object} genres жанры
+ *
+ * @return {Object}
  */
 const drawDiagram = (genres) => {
   const statisticCtx = document.querySelector(`.statistic__chart`);
   const BAR_HEIGHT = 50;
   statisticCtx.height = BAR_HEIGHT * Object.keys(genres).length;
 
-  new Chart(statisticCtx, { // eslint-disable-line no-new
+  return new Chart(statisticCtx, {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
