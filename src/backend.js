@@ -41,7 +41,7 @@ const load = (url, method, body = null) => {
   headers.append(`Authorization`, authorization);
 
   return fetch(url, {method, body, headers}).then(checkStatus)
-    .then((response) => response.json()).catch(onError);
+    .then((response) => response.json());
 };
 
 /**
@@ -51,7 +51,7 @@ const load = (url, method, body = null) => {
  *
  * @return {Function} callback
  */
-export const getData = (fn) => load(URL, `GET`).then((data) => fn(data));
+export const getData = (fn) => load(URL, `GET`).then((data) => fn(data)).catch(onError);
 
 /**
  * @description отправка данных на сервер
