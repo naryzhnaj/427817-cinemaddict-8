@@ -1,5 +1,7 @@
 const URL = `https://es8-demo-srv.appspot.com/moowle/movies`;
-const SUCCESS_STATUS = 200;
+const StatusSuccess = {
+  MIN: 200,
+  MAX: 300};
 const authorization = `Basic eo0w590ik29889a`;
 
 /**
@@ -10,7 +12,7 @@ const authorization = `Basic eo0w590ik29889a`;
  * @return {Object} response
  */
 const checkStatus = (response) => {
-  if (response.status >= SUCCESS_STATUS && response.status < SUCCESS_STATUS + 100) {
+  if (response.status >= StatusSuccess.MIN && response.status < StatusSuccess.MAX) {
     return response;
   } else {
     throw new Error(`${response.status}: ${response.statusText}`);
