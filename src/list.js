@@ -1,5 +1,6 @@
 import Film from './film.js';
 import renderPopup from './popup-service.js';
+import {updateStatus} from './filters-service.js';
 
 const CARDS_AMOUNT = 5;
 
@@ -10,10 +11,17 @@ export default class List {
     this._withControls = inMainBlock;
     this._activeList = `all`;
     this._renderedAmount = 0;
+    this.isStock = true;
+    this.filterBlock = null;
+  }
+
+  set setFilters(node) {
+    this.filterBlock = node;
   }
 
   _clear() {
     this._renderedAmount = 0;
+    this.isStock = true;
     const cards = this._parent.querySelectorAll(`.film-card`);
     cards.forEach((card) => {
       card.remove();
@@ -42,16 +50,13 @@ export default class List {
   }
 
   changeFilter(filterName) {
-    if (this._activeList !== filterName) {
-      this._clear();
-      this._activeList = filterName;
-      this.render(this.filter(filterName));
-    }
+    this._clear();
+    this._activeList = filterName;
+    this.render(this.filter(filterName));
   }
 
   render(data = this._data) {
     const cards = data.slice(this._renderedAmount, this._renderedAmount + CARDS_AMOUNT);
-
     cards.forEach((film) => {
       const filmCard = new Film(film, this._withControls);
 
@@ -59,20 +64,30 @@ export default class List {
 
       filmCard.onAddToWatchList = () => {
         film.user_details.watchlist = !film.user_details.watchlist;
-        // updateStatus(`watchlist`, film.user_details.watchlist);
+        updateStatus(`watchlist`, film.user_details.watchlist, this.filterBlock);
+        if (this._activeList === `watchlist`) {
+          filmCard.delete();
+        }
       };
 
       filmCard.onMarkAsWatched = () => {
         film.user_details[`already_watched`] = !film.user_details[`already_watched`];
-        // updateStatus(`already_watched`, film.user_details[`already_watched`]);
+        updateStatus(`already_watched`, film.user_details[`already_watched`], this.filterBlock);
+        if (this._activeList === `history`) {
+          filmCard.delete();
+        }
         if (film.user_details[`already_watched`]) {
           film.user_details[`watching_date`] = Date.now();
         }
+
       };
 
       filmCard.onMarkAsFavorite = () => {
         film.user_details.favorite = !film.user_details.favorite;
-        // updateStatus(`favorite`, film.user_details.favorite);
+        updateStatus(`favorite`, film.user_details.favorite, this.filterBlock);
+        if (this._activeList === `favorites`) {
+          filmCard.delete();
+        }
       };
 
       this._parent.appendChild(filmCard.render());
@@ -80,6 +95,9 @@ export default class List {
 
     if (this._withControls) {
       this._renderedAmount += CARDS_AMOUNT;
+      if (!cards || this._data.length <= this._renderedAmount) {
+        this.isStock = false;
+      }
     }
   }
 }

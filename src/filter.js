@@ -4,6 +4,15 @@ export default class Filter extends Component {
   constructor(data) {
     super();
     this._data = data;
+    this.counts = {};
+    this.userStatus = ``;
+  }
+
+  set setNumbers(amounts) {
+    this.counts = amounts;
+    Object.keys(amounts).forEach((name) => {
+      this._element.querySelector(`#${name} .main-navigation__item-count`).textContent = amounts[name];
+    });
   }
 
   get template() {
@@ -34,8 +43,13 @@ export default class Filter extends Component {
     }
   }
 
-  update(filtername, num) {
-    this._element.querySelector(`#${filtername} .main-navigation__item-count`).textContent = num;
+  update(filtername, i) {
+    if (i) {
+      this.counts[filtername]++;
+    } else {
+      this.counts[filtername]--;
+    }
+    this._element.querySelector(`#${filtername} .main-navigation__item-count`).textContent = this.counts[filtername];
   }
 
   set onStatOpen(fn) {

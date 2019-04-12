@@ -24,9 +24,10 @@ const onLoad = (films) => {
   cards = new List(films, filmsContainer);
 
   cards.render();
+  cards.setFilters = filterBlock;
   topRatedCards.render();
   mostCommentedCards.render();
-  userStatus = countStatus(filters, films, filterBlock);
+  countStatus(films, filterBlock);
 };
 
 /**
@@ -38,7 +39,7 @@ const showStatistic = () => {
   if (stat) {
     stat.remove();
   } else {
-    stat = new Statistic(cards.filter(`history`), userStatus);
+    stat = new Statistic(cards.filter(`history`), filterBlock.userStatus);
     document.querySelector(`.main`).appendChild(stat.render());
   }
 };
@@ -58,6 +59,9 @@ const titleSearch = () => {
  */
 const showMore = () => {
   cards.render(cards.filter());
+  if (!cards.isStock) {
+    showMoreButton.classList.add(`visually-hidden`);
+  }
 };
 
 const loadMessage = showMessage();
@@ -68,12 +72,11 @@ const mostCommentedContainer = document.querySelector(`.films-list--extra:last-c
 const showMoreButton = document.querySelector(`.films-list__show-more`);
 const searchField = document.querySelector(`.search__field`);
 let cards = {};
-let userStatus = ``;
-let filters = {watchlist: 0, history: 0, favorites: 0};
+const filterBlock = new Filter(filterNames);
 getData(onLoad);
 
-const filterBlock = new Filter(filterNames);
 filterBlock.onStatOpen = showStatistic;
+
 filterBlock.onFilterChange = (status) => {
   cards.changeFilter(status);
   if (showMoreButton.classList.contains(`visually-hidden`)) {

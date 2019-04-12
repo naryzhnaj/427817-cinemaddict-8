@@ -11,6 +11,21 @@ const statuses = new Map([
 ]);
 
 /**
+ * @description отрисовать изменения при клике на рейтинги
+ *
+ * @param {String} status название рейтинга
+ * @param {Boolean} isActive нужно ли увеличить значение счетчика
+ * @param {Object} filters блок фильтров
+ */
+export const updateStatus = (status, isActive, filters) => {
+  const filtername = statuses.get(status);
+  if (filtername === `history`) {
+    filters.userStatus = nameUser(filters.counts.history);
+  }
+  filters.update(filtername, isActive);
+};
+
+/**
  * @description составить список самых популярных фильмов
  *
  * @param {Array} data все фильмы
@@ -31,13 +46,14 @@ export const makeExtraList = (data, field) => {
 /**
  * @description подсчет кол-ва фильмов в списках для панели фильтров
  *
- * @param {Object} filters все фильмы
  * @param {Array} data все фильмы
  * @param {Object} block блок фильтрации
- *
- * @return {String} статус пользователя
  */
-export const countStatus = (filters, data, block) => {
+export const countStatus = (data, block) => {
+  const filters = {};
+  statuses.forEach((el) => {
+    filters[el] = 0;
+  });
   data.forEach((el) => {
     statuses.forEach((val, key) => {
       if (el.user_details[key]) {
@@ -46,17 +62,14 @@ export const countStatus = (filters, data, block) => {
     });
   });
   document.querySelector(`.footer__statistics`).firstChild.innerHTML = `${data.length} movies inside`;
-
-  Object.keys(filters).forEach((name) =>
-    block.update(name, filters[name])
-  );
-  return nameUser(filters.history);
+  block.userStatus = nameUser(filters.history);
+  block.setNumbers = filters;
 };
 
 /**
  * @description определить и вывести статус пользователя
  *
- * @param {Number} amount
+ * @param {Number} amount кол-во просмотренных
  *
  * @return {String} статус
  */
