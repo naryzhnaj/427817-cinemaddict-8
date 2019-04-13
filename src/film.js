@@ -12,10 +12,6 @@ export default class Film extends Component {
     this._rating = data.film_info.total_rating;
     this._commentsNumber = data.comments.length;
     this._withDescription = withDescription;
-
-    this.isFavourite = data.user_details.favorite;
-    this.isWatched = data.user_details.already_watched;
-    this.inWatchlist = data.user_details.watchlist;
   }
 
   get minutesFormated() {
@@ -52,37 +48,27 @@ export default class Film extends Component {
     this._onClick = fn;
   }
 
-  set onAddToWatchList(fn) {
-    this._onWatchList = fn;
-  }
-
-  set onMarkAsWatched(fn) {
-    this._onWatched = fn;
-  }
-
-  set onMarkAsFavorite(fn) {
-    this._onFavorite = fn;
+  set onStatusClick(fn) {
+    this._onStatusClick = fn;
   }
 
   _onAddToWatchList(evt) {
     evt.preventDefault();
-    if (typeof this._onWatchList === `function`) {
-      this._onWatchList();
-    }
+    return typeof this._onStatusClick === `function` && this._onStatusClick(`watchlist`);
   }
 
   _onMarkAsWatched(evt) {
     evt.preventDefault();
-    if (typeof this._onWatched === `function`) {
-      this._onWatched();
-    }
+    return typeof this._onStatusClick === `function` && this._onStatusClick(`already_watched`);
   }
 
   _onMarkAsFavorite(evt) {
     evt.preventDefault();
-    if (typeof this._onFavorite === `function`) {
-      this._onFavorite();
-    }
+    return typeof this._onStatusClick === `function` && this._onStatusClick(`favorite`);
+  }
+
+  delete() {
+    this._element.remove();
   }
 
   bind() {

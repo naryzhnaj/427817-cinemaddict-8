@@ -11,7 +11,7 @@ const statuses = new Map([
 ]);
 
 /**
- * @description отрисовать изменения при клике на рейтинги
+ * @description пересчет статусов при клике на рейтинги
  *
  * @param {String} status название рейтинга
  * @param {Boolean} isActive нужно ли увеличить значение счетчика
@@ -19,10 +19,10 @@ const statuses = new Map([
  */
 export const updateStatus = (status, isActive, filters) => {
   const filtername = statuses.get(status);
+  filters.update(filtername, isActive);
   if (filtername === `history`) {
     filters.userStatus = nameUser(filters.counts.history);
   }
-  filters.update(filtername, isActive);
 };
 
 /**
@@ -54,6 +54,7 @@ export const countStatus = (data, block) => {
   statuses.forEach((el) => {
     filters[el] = 0;
   });
+
   data.forEach((el) => {
     statuses.forEach((val, key) => {
       if (el.user_details[key]) {

@@ -1,17 +1,35 @@
 import Popup from './popup.js';
 import {updateData} from './backend.js';
 
+const statusesFromPopup = new Map([
+  [`watchlist`, `inWatchlist`],
+  [`already_watched`, `isWatched`],
+  [`favorite`, `isFavourite;`],
+  [`personal_rating`, `userRating`]
+]);
+
 /**
  * @description копирование рейтингов из попапа в основную структуру
  *
- * @param {Object} popup
- * @param {Object} userData
+ * @param {Object} popup экземпляр класса попапа
+ * @param {Object} filmData данные соответствующего фильма
+ *
+ * @return {Boolean} isChanged наличие изменений
  */
-const copyRating = (popup, userData) => {
-  userData.favorite = popup.isFavourite;
-  userData[`already_watched`] = popup.isWatched;
-  userData.watchlist = popup.inWatchlist;
-  userData[`personal_rating`] = popup.userRating;
+const copyRating = (popup, filmData) => {
+  let isChanged = false;
+
+  statusesFromPopup.forEach((val, key) => {
+    if (popup[val] !== filmData.user_details[key]) {
+      isChanged = true;
+      filmData.user_details[key] = popup[val];
+
+      if (key === `already_watched`) {
+        filmData.user_details[`watching_date`] = (filmData.user_details[key]) ? Date.now() : null;
+      }
+    }
+  });
+  return isChanged;
 };
 
 /**
@@ -27,12 +45,12 @@ export default (filmData) => {
   const popup = new Popup(filmData);
 
   popup.onCloseClick = () => {
-    copyRating(popup, filmData[`user_details`]);
+    return copyRating(popup, filmData) && updateData(filmData);
   };
 
   popup.onCommentAdd = (newComment) => {
     filmData.comments.push(newComment);
-    copyRating(popup, filmData[`user_details`]);
+    copyRating(popup, filmData);
     popup.block();
 
     updateData(filmData).then((data) => {
@@ -44,7 +62,7 @@ export default (filmData) => {
 
   popup.onCommentDelete = () => {
     filmData.comments.pop();
-    copyRating(popup, filmData[`user_details`]);
+    copyRating(popup, filmData);
     popup.block();
 
     updateData(filmData).then((data) => {

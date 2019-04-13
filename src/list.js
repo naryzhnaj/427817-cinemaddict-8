@@ -1,8 +1,14 @@
 import Film from './film.js';
 import renderPopup from './popup-service.js';
 import {updateStatus} from './filters-service.js';
+import {updateData} from './backend.js';
 
 const CARDS_AMOUNT = 5;
+const statusesFromFilm = {
+  watchlist: `watchlist`,
+  [`already_watched`]: `history`,
+  favorite: `favorites`
+};
 
 export default class List {
   constructor(data, parent, inMainBlock = true) {
@@ -12,11 +18,11 @@ export default class List {
     this._activeList = `all`;
     this._renderedAmount = 0;
     this.isStock = true;
-    this.filterBlock = null;
+    this._filterBlock = null;
   }
 
   set setFilters(node) {
-    this.filterBlock = node;
+    this._filterBlock = node;
   }
 
   _clear() {
@@ -62,30 +68,15 @@ export default class List {
 
       filmCard.onClick = () => renderPopup(film);
 
-      filmCard.onAddToWatchList = () => {
-        film.user_details.watchlist = !film.user_details.watchlist;
-        updateStatus(`watchlist`, film.user_details.watchlist, this.filterBlock);
-        if (this._activeList === `watchlist`) {
-          filmCard.delete();
+      filmCard.onStatusClick = (status) => {
+        film.user_details[status] = !film.user_details[status];
+        if (status === `already_watched`) {
+          film.user_details[`watching_date`] = (film.user_details[`already_watched`]) ? Date.now() : null;
         }
-      };
+        updateData(film);
 
-      filmCard.onMarkAsWatched = () => {
-        film.user_details[`already_watched`] = !film.user_details[`already_watched`];
-        updateStatus(`already_watched`, film.user_details[`already_watched`], this.filterBlock);
-        if (this._activeList === `history`) {
-          filmCard.delete();
-        }
-        if (film.user_details[`already_watched`]) {
-          film.user_details[`watching_date`] = Date.now();
-        }
-
-      };
-
-      filmCard.onMarkAsFavorite = () => {
-        film.user_details.favorite = !film.user_details.favorite;
-        updateStatus(`favorite`, film.user_details.favorite, this.filterBlock);
-        if (this._activeList === `favorites`) {
+        updateStatus(status, film.user_details[status], this._filterBlock);
+        if (this._activeList === statusesFromFilm[status]) {
           filmCard.delete();
         }
       };
