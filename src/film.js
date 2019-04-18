@@ -67,10 +67,6 @@ export default class Film extends Component {
     return typeof this._onStatusClick === `function` && this._onStatusClick(`favorite`);
   }
 
-  delete() {
-    this._element.remove();
-  }
-
   bind() {
     this._element.querySelector(`.film-card__comments`).addEventListener(`click`, this._onClick.bind(this));
     this._element.querySelector(`.film-card__controls-item--add-to-watchlist`).addEventListener(`click`, this._onAddToWatchList.bind(this));

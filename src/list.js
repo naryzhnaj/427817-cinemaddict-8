@@ -77,7 +77,7 @@ export default class List {
 
         updateStatus(status, film.user_details[status], this._filterBlock);
         if (this._activeList === statusesFromFilm[status]) {
-          filmCard.delete();
+          this.changeFilter(this._activeList);
         }
       };
 

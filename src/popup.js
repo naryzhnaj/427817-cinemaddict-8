@@ -3,6 +3,7 @@ import moment from 'moment';
 
 const ENTER_KEYCODE = 13;
 const ESC_KEYCODE = 27;
+const MAX_RATING = 9;
 
 const getEmoji = (emotion) => {
   const face = {sleeping: `😴`, [`neutral-face`]: `😐`, grinning: `😀`}[emotion];
@@ -30,6 +31,8 @@ export default class Popup extends Component {
     this.isFavourite = data.user_details.favorite;
     this.isWatched = data.user_details.already_watched;
     this.inWatchlist = data.user_details.watchlist;
+
+    this._onKeyPressed = this._onKeyPressed.bind(this);
   }
 
   get renderComments() {
@@ -160,7 +163,7 @@ export default class Popup extends Component {
           <p class="film-details__user-rating-feelings">How you feel it?</p>
 
           <div class="film-details__user-rating-score">
-  ${new Array(9).fill().map((val, i)=> 1 + i).map((i) =>
+  ${new Array(MAX_RATING).fill().map((val, i)=> 1 + i).map((i) =>
     `<input type="radio" name="score" class="film-details__user-rating-input visually-hidden" value=${i} id="rating-${i}">
             <label class="film-details__user-rating-label" for="rating-${i}">${i}</label>`).join(``)}
           </div>
@@ -206,6 +209,7 @@ export default class Popup extends Component {
     if (typeof this._close === `function`) {
       this._close();
       this._element.remove();
+      document.removeEventListener(`keydown`, this._onKeyPressed);
     }
   }
 
@@ -265,7 +269,7 @@ export default class Popup extends Component {
     this._element.querySelector(`.film-details__close-btn`).addEventListener(`click`, this._onCloseClick.bind(this));
     this._element.querySelector(`.film-details__user-rating-score`).addEventListener(`change`, this._onScoreClick.bind(this));
     this._element.querySelector(`.film-details__controls`).addEventListener(`change`, this._onStatusClick.bind(this));
-    document.addEventListener(`keydown`, this._onKeyPressed.bind(this));
+    document.addEventListener(`keydown`, this._onKeyPressed);
     this._element.querySelector(`.film-details__watched-reset`).addEventListener(`click`, this._onUndoClick.bind(this));
     this._element.querySelector(`.film-details__emoji-list`).addEventListener(`click`, this._onEmojiClick.bind(this));
   }

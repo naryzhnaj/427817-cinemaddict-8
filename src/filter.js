@@ -43,8 +43,8 @@ export default class Filter extends Component {
     }
   }
 
-  update(filtername, i) {
-    if (i) {
+  update(filtername, isRising) {
+    if (isRising) {
       this.counts[filtername]++;
     } else {
       this.counts[filtername]--;

@@ -33,6 +33,23 @@ const copyRating = (popup, filmData) => {
 };
 
 /**
+ * @description действия над попапом при отправке/удалении коментария
+ *
+ * @param {Object} popup экземпляр класса попапа
+ * @param {Object} filmData данные соответствующего фильма
+ */
+const updateComments = (popup, filmData) => {
+  copyRating(popup, filmData);
+  popup.block();
+
+  updateData(filmData).then((data) => {
+    popup.update(data.comments);
+    filmData.comments = data.comments;
+    popup.unblock();
+  }).catch(() => popup.shake());
+};
+
+/**
  * @description отрисовать попап с подробностями фильма
  *
  * @param {Object} filmData данные соответствующего фильма
@@ -50,26 +67,12 @@ export default (filmData) => {
 
   popup.onCommentAdd = (newComment) => {
     filmData.comments.push(newComment);
-    copyRating(popup, filmData);
-    popup.block();
-
-    updateData(filmData).then((data) => {
-      popup.update(data.comments);
-      filmData.comments = data.comments;
-      popup.unblock();
-    }).catch(() => popup.shake());
+    updateComments(popup, filmData);
   };
 
   popup.onCommentDelete = () => {
     filmData.comments.pop();
-    copyRating(popup, filmData);
-    popup.block();
-
-    updateData(filmData).then((data) => {
-      popup.update(data.comments);
-      filmData.comments = data.comments;
-      popup.unblock();
-    });
+    updateComments(popup, filmData);
   };
 
   placard = popup.render();
